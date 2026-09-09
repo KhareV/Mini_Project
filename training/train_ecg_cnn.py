@@ -40,7 +40,9 @@ from preprocessing.ecg import ECGPreprocessor, NormalizationStats, synthesize_ec
 from preprocessing.quality_ecg import ECGQualityAssessor
 from models.ecg_cnn import ECGCNN1D, ECGCNNConfig, ECGWindowDataset
 from evaluation.metrics import compute_metrics
-from evaluation.calibration import select_f1_threshold
+from evaluation.calibration import (
+    select_f1_threshold, brier_score, expected_calibration_error, reliability_bins,
+)
 from training.run_manifest import build_run_manifest, write_manifest
 
 logging.basicConfig(
@@ -264,6 +266,21 @@ def train_cnn(
         val_true_best, val_prob_best
     )
     test_pred = (test_prob >= decision_threshold).astype(int)
+    calibration = {
+        "validation_brier": brier_score(val_true_best, val_prob_best),
+        "validation_ece": expected_calibration_error(val_true_best, val_prob_best),
+        "test_brier": brier_score(test_true, test_prob),
+        "test_ece": expected_calibration_error(test_true, test_prob),
+        "validation_reliability_bins": reliability_bins(val_true_best, val_prob_best),
+        "test_reliability_bins": reliability_bins(test_true, test_prob),
+    }
+    np.savez_compressed(
+        exp_dir / "probabilities.npz",
+        validation_labels=val_true_best,
+        validation_probabilities=val_prob_best,
+        test_labels=test_true,
+        test_probabilities=test_prob,
+    )
     test_metrics = compute_metrics(
         test_true, test_pred, test_prob,
         split="test", model_name="ecg_cnn_MODEL_V1", dataset=dataset
@@ -299,6 +316,7 @@ def train_cnn(
             "best_val_f1": round(best_val_f1, 4),
             "decision_threshold": round(decision_threshold, 6),
             "validation_f1_at_threshold": round(validation_f1, 4),
+            "calibration": calibration,
             "test": test_metrics.to_dict(),
         }, f, indent=2)
 

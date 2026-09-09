@@ -16,6 +16,8 @@ Expected result at the current revision: **all checks pass and the full test sui
 
 Calibration primitives are available for evaluation code as `brier_score`, `expected_calibration_error`, and `reliability_bins` in `evaluation.calibration`. They require persisted validation/test probabilities; the existing JSON run artifacts do not retroactively contain per-example probabilities.
 
+New CNN runs persist those probabilities at `E04_ecg_cnn/probabilities.npz` and include calibration metrics in `results.json`.
+
 ## 2. Focused phase checks
 
 ```bash
