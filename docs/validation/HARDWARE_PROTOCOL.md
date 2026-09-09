@@ -3,3 +3,5 @@
 The hardware boundary uses a small little-endian binary frame with a magic/version header, fixed-width device identifier, monotonic sequence, microsecond timestamp, float32 ECG samples, and CRC32. `hardware.protocol` is transport-independent and can be used by serial or BLE drivers later. It does not claim a radio implementation, clock accuracy, or production security; those are Phase 12 acceptance gates.
 
 `hardware.framing.ECGFrameDecoder` handles fragmented reads and resynchronizes after corrupt frames. It only emits packets after CRC and length validation, making it suitable as the first layer beneath serial/BLE drivers.
+
+`hardware.bridge.HardwareECGBridge` connects that decoder to the existing sequence-aware replay service. Invalid frames are counted and discarded before inference; sequence gaps reset the model window through the same safety path used by simulated packets.
