@@ -1,7 +1,5 @@
-"""
-inference/__init__.py
-P1 Inference package.
-"""
-from inference.ecg_inference import ECGInferenceEngine, ECGInferenceResult
+"""Versioned offline inference boundaries."""
 
-__all__ = ["ECGInferenceEngine", "ECGInferenceResult"]
+from .ecg_model_v1 import ECGModelV1, ECGPrediction
+
+__all__ = ["ECGModelV1", "ECGPrediction"]
