@@ -7,3 +7,5 @@ The replay path is deterministic for the same checkpoint, normalization artifact
 `ECGPacketReplayer` adds sequence-aware transport replay. A missing or out-of-order packet increments the gap counters and resets the window buffer, so unknown samples are never silently bridged. Packet timing/jitter can therefore be tested independently from BLE or serial implementation.
 
 `inference.transport_simulator` creates seeded packet traces with configurable packet size, timestamp jitter, and periodic drops, then reports packets received, gaps detected, discontinuities, and predictions emitted. It is a test harness only; it does not claim real radio performance.
+
+`backend.ml.ecg_replay_service.ECGReplayService` is the backend dependency-injection seam. It accepts explicit model artifacts, exposes single-window and packet replay methods, and preserves model/preprocessing provenance in every response. A live HTTP route is intentionally deferred until the backend contract is agreed with the frontend.
