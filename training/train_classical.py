@@ -27,6 +27,7 @@ import json
 import logging
 import argparse
 import time
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -40,12 +41,35 @@ from preprocessing.windowing import ECGWindower
 from preprocessing.quality_ecg import ECGQualityAssessor
 from features.ecg_features import ECGFeatureExtractor
 from evaluation.metrics import compute_metrics, compute_per_class_metrics
+from training.run_manifest import build_run_manifest, write_manifest
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+def predict_probabilities_checked(classifier, features: np.ndarray) -> np.ndarray:
+    """Return finite binary probabilities, rejecting numerical model failures.
+
+    Some local NumPy/BLAS builds emit spurious overflow warnings inside
+    scikit-learn's dense matrix helper even for small finite matrices. Suppress
+    only that known helper warning and validate the actual returned values.
+    """
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore", category=RuntimeWarning,
+            module=r"sklearn\.utils\.extmath",
+        )
+        probabilities = np.asarray(classifier.predict_proba(features), dtype=np.float64)
+    if probabilities.ndim != 2 or probabilities.shape[1] != 2:
+        raise RuntimeError("Classifier did not return binary class probabilities")
+    if not np.isfinite(probabilities).all():
+        raise RuntimeError("Classifier returned non-finite probabilities")
+    if not np.allclose(probabilities.sum(axis=1), 1.0, atol=1e-6):
+        raise RuntimeError("Classifier probabilities do not sum to one")
+    return probabilities
 
 
 # ─── Synthetic Data Generator (for development/CI without real dataset) ───────
@@ -194,6 +218,7 @@ def run_majority_baseline(
             "experiment": "E01_majority_baseline",
             "majority_class": majority_class,
             "dataset": dataset,
+            "result_status": "SOFTWARE_VALIDATION_ONLY" if dataset.upper() == "SYNTHETIC" else "RESEARCH_RESULT",
             "results": results,
         }, f, indent=2)
 
@@ -215,6 +240,12 @@ def run_logistic_regression(
     exp_dir.mkdir(parents=True, exist_ok=True)
 
     # Scale features
+    # Feature extraction uses float32 for compact signal processing. Promote to
+    # float64 before scaling/linear algebra to avoid platform BLAS overflow
+    # warnings on otherwise finite, well-bounded feature matrices.
+    X_train = np.asarray(X_train, dtype=np.float64)
+    X_val = np.asarray(X_val, dtype=np.float64)
+    X_test = np.asarray(X_test, dtype=np.float64)
     scaler = StandardScaler()
     X_train_s = scaler.fit_transform(X_train)
     X_val_s = scaler.transform(X_val)
@@ -225,7 +256,9 @@ def run_logistic_regression(
     clf = LogisticRegression(
         max_iter=1000, C=1.0,
         class_weight="balanced",
-        random_state=seed, solver="lbfgs",
+        # liblinear is stable for the small, potentially separable synthetic
+        # fixture used in CI and does not change the frozen feature interface.
+        random_state=seed, solver="liblinear",
     )
     clf.fit(X_train_s, y_train)
     train_time = time.time() - t0
@@ -236,8 +269,8 @@ def run_logistic_regression(
         ("val", X_val_s, y_val),
         ("test", X_test_s, y_test),
     ]:
-        y_pred = clf.predict(X_s)
-        y_prob = clf.predict_proba(X_s)[:, 1]
+        y_prob = predict_probabilities_checked(clf, X_s)[:, 1]
+        y_pred = (y_prob >= 0.5).astype(int)
         metrics = compute_metrics(
             y_s, y_pred, y_prob,
             split=split_name, model_name="logistic_regression",
@@ -255,6 +288,7 @@ def run_logistic_regression(
             "training_time_s": round(train_time, 2),
             "n_features": X_train.shape[1],
             "dataset": dataset,
+            "result_status": "SOFTWARE_VALIDATION_ONLY" if dataset.upper() == "SYNTHETIC" else "RESEARCH_RESULT",
             "seed": seed,
             "results": results,
         }, f, indent=2)
@@ -294,8 +328,8 @@ def run_random_forest(
         ("val", X_val, y_val),
         ("test", X_test, y_test),
     ]:
-        y_pred = clf.predict(X_s)
-        y_prob = clf.predict_proba(X_s)[:, 1]
+        y_prob = predict_probabilities_checked(clf, X_s)[:, 1]
+        y_pred = (y_prob >= 0.5).astype(int)
         metrics = compute_metrics(
             y_s, y_pred, y_prob,
             split=split_name, model_name="random_forest",
@@ -321,6 +355,7 @@ def run_random_forest(
             "n_estimators": n_estimators,
             "n_features": X_train.shape[1],
             "dataset": dataset,
+            "result_status": "SOFTWARE_VALIDATION_ONLY" if dataset.upper() == "SYNTHETIC" else "RESEARCH_RESULT",
             "seed": seed,
             "top_features": [(n, round(float(v), 4)) for n, v in top_feats],
             "results": results,
@@ -341,14 +376,13 @@ def main():
     parser.add_argument("--ptbxl", type=str, default=None,
                         help="Path to PTB-XL dataset root")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--output-dir", type=str, default="experiments")
+    parser.add_argument("--output-dir", type=str, default="experiments/phase3_synthetic")
     parser.add_argument("--n-normal", type=int, default=300)
     parser.add_argument("--n-abnormal", type=int, default=200)
     args = parser.parse_args()
 
     np.random.seed(args.seed)
 
-    preprocessor = ECGPreprocessor()
     feature_extractor = ECGFeatureExtractor(fs=250)
     quality_assessor = ECGQualityAssessor()
     windower = ECGWindower()
@@ -413,10 +447,43 @@ def main():
         f"val={len(splits['val'])}, test={len(splits['test'])}"
     )
 
+    # ── Fit training-only preprocessing artifact ──────────────────────────────
+    # This happens after patient splitting, before any val/test transformation.
+    train_idx, val_idx, test_idx = splits["train"], splits["val"], splits["test"]
+    fitter = ECGPreprocessor()
+    normalization_stats = fitter.fit_normalization_stats(
+        list(signals[train_idx]), source_fs
+    )
+    outdir = Path(args.output_dir)
+    artifact_dir = outdir / "shared"
+    normalization_path = artifact_dir / "normalization_stats.json"
+    normalization_stats.save(normalization_path)
+    preprocessor = ECGPreprocessor(
+        normalization_stats=normalization_stats,
+        require_normalization_stats=True,
+    )
+
+    split_counts = {name: len(indices) for name, indices in splits.items()}
+    run_manifest = build_run_manifest(
+        experiment_group="phase-3-centralized-classical-baselines",
+        dataset=dataset_name,
+        seed=args.seed,
+        split_counts=split_counts,
+        preprocessing=preprocessor.config_dict,
+        normalization_stats=normalization_stats.to_dict(),
+        synthetic=dataset_name == "SYNTHETIC",
+        project_root=Path(__file__).parent.parent,
+        dataset_details={
+            "source_fs": source_fs,
+            "n_normal_requested": args.n_normal if dataset_name == "SYNTHETIC" else None,
+            "n_abnormal_requested": args.n_abnormal if dataset_name == "SYNTHETIC" else None,
+            "participant_split": "patient_level",
+        },
+    )
+    write_manifest(run_manifest, outdir / "run_manifest.json")
+
     # ── Feature extraction ────────────────────────────────────────────────────
     logger.info("Extracting features...")
-
-    train_idx, val_idx, test_idx = splits["train"], splits["val"], splits["test"]
 
     X_train, y_train, _ = extract_features(
         signals[train_idx], labels[train_idx],
@@ -439,7 +506,7 @@ def main():
     )
 
     # ── Run experiments ───────────────────────────────────────────────────────
-    outdir = args.output_dir
+    outdir = str(outdir)
 
     run_majority_baseline(
         y_train, y_val, y_test,

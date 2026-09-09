@@ -1,0 +1,95 @@
+{
+  "experiment": "E03_random_forest",
+  "training_time_s": 0.09,
+  "n_estimators": 200,
+  "n_features": 42,
+  "dataset": "SYNTHETIC",
+  "result_status": "SOFTWARE_VALIDATION_ONLY",
+  "seed": 42,
+  "top_features": [
+    [
+      "spec_spectral_edge_95",
+      0.085
+    ],
+    [
+      "spec_total_power",
+      0.085
+    ],
+    [
+      "td_p75",
+      0.07
+    ],
+    [
+      "morph_envelope_std",
+      0.06
+    ],
+    [
+      "td_rms",
+      0.06
+    ],
+    [
+      "td_p90",
+      0.0551
+    ],
+    [
+      "td_iqr",
+      0.055
+    ],
+    [
+      "td_std",
+      0.055
+    ],
+    [
+      "td_p10",
+      0.05
+    ],
+    [
+      "td_kurtosis",
+      0.05
+    ]
+  ],
+  "results": {
+    "val": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "specificity": 1.0,
+      "false_positive_rate": 0.0,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "tp": 12,
+      "tn": 18,
+      "fp": 0,
+      "fn": 0,
+      "n_total": 30,
+      "n_normal": 18,
+      "n_abnormal": 12,
+      "split": "val",
+      "model_name": "random_forest",
+      "dataset": "SYNTHETIC",
+      "notes": ""
+    },
+    "test": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "specificity": 1.0,
+      "false_positive_rate": 0.0,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "tp": 10,
+      "tn": 20,
+      "fp": 0,
+      "fn": 0,
+      "n_total": 30,
+      "n_normal": 20,
+      "n_abnormal": 10,
+      "split": "test",
+      "model_name": "random_forest",
+      "dataset": "SYNTHETIC",
+      "notes": ""
+    }
+  }
+}

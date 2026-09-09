@@ -1,0 +1,50 @@
+{
+  "experiment": "E01_majority_baseline",
+  "majority_class": 0,
+  "dataset": "SYNTHETIC",
+  "result_status": "SOFTWARE_VALIDATION_ONLY",
+  "results": {
+    "val": {
+      "accuracy": 0.6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "specificity": 1.0,
+      "false_positive_rate": 0.0,
+      "auroc": -1.0,
+      "auprc": -1.0,
+      "tp": 0,
+      "tn": 18,
+      "fp": 0,
+      "fn": 12,
+      "n_total": 30,
+      "n_normal": 18,
+      "n_abnormal": 12,
+      "split": "val",
+      "model_name": "majority_baseline",
+      "dataset": "SYNTHETIC",
+      "notes": "Predicts class 0 for all inputs"
+    },
+    "test": {
+      "accuracy": 0.6667,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "specificity": 1.0,
+      "false_positive_rate": 0.0,
+      "auroc": -1.0,
+      "auprc": -1.0,
+      "tp": 0,
+      "tn": 20,
+      "fp": 0,
+      "fn": 10,
+      "n_total": 30,
+      "n_normal": 20,
+      "n_abnormal": 10,
+      "split": "test",
+      "model_name": "majority_baseline",
+      "dataset": "SYNTHETIC",
+      "notes": "Predicts class 0 for all inputs"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "experiment_group": "phase-3-centralized-classical-baselines",
+  "created_at_utc": "2026-09-09T13:27:57.211571+00:00",
+  "git_commit": "e063b3552a7439091b971df1f2b4efcf50046780",
+  "dataset": "SYNTHETIC",
+  "synthetic": true,
+  "research_claim_boundary": "Synthetic run: validates software integration only; not clinical or dataset-performance evidence.",
+  "seed": 42,
+  "split_counts": {
+    "train": 140,
+    "val": 30,
+    "test": 30
+  },
+  "dataset_details": {
+    "source_fs": 250,
+    "n_normal_requested": 120,
+    "n_abnormal_requested": 80,
+    "participant_split": "patient_level"
+  },
+  "preprocessing": {
+    "preprocessing_version": "1.1.0",
+    "target_fs": 250,
+    "bandpass_low": 0.5,
+    "bandpass_high": 40.0,
+    "notch_freq": 50.0,
+    "notch_q": 30.0,
+    "clip_std_multiplier": 5.0,
+    "filter_order": 4,
+    "requires_normalization_stats": true
+  },
+  "preprocessing_sha256": "19a2c0af13bd4080dec843dd29053f109110e49724acca73f6c4fe64c245e92c",
+  "normalization_stats": {
+    "mean": 0.0005064187571406364,
+    "std": 0.2116026133298874,
+    "n_samples_used": 350000,
+    "preprocessing_version": "1.1.0"
+  },
+  "normalization_sha256": "48e79223d267c2510ba20f871c0cb82729b08336d3a77fcb2560ed232997a224",
+  "test_used_for_tuning": false
+}
