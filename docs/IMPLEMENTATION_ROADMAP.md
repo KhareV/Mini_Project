@@ -29,7 +29,7 @@ This roadmap is executed by one maintainer. Every phase follows the same loop:
 | 5 | Backend WFDB/captured-file replay using MODEL_V1 | Offline/stream prediction equivalence | IMPLEMENTED (offline + deterministic stream replay) |
 | 6 | PPG, SpO2, BIDMC, and synchronization | Timestamp-alignment and quality tests | IMPLEMENTED (sync + quality + BIDMC loader contract; archive pending) |
 | 7 | Centralized multimodal model | Required ablations and missing-modality tests | IMPLEMENTED (architecture contract; BIDMC training pending) |
-| 8 | Deterministic federated client partitions | IID/non-IID manifest audits | NOT_STARTED |
+| 8 | Deterministic federated client partitions | IID/non-IID manifest audits | IMPLEMENTED (partition contract; training pending) |
 | 9 | Actual Flower FedAvg | Toy aggregation and IID convergence comparison | SCAFFOLDED |
 | 10 | FedProx, QAPFL, and heterogeneity study | Controlled same-budget comparisons | SCAFFOLDED |
 | 11 | Secure aggregation and optional DP | Threat-model and privacy/overhead reports | NOT_STARTED |
