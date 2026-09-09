@@ -9,3 +9,5 @@ The replay path is deterministic for the same checkpoint, normalization artifact
 `inference.transport_simulator` creates seeded packet traces with configurable packet size, timestamp jitter, and periodic drops, then reports packets received, gaps detected, discontinuities, and predictions emitted. It is a test harness only; it does not claim real radio performance.
 
 `backend.ml.ecg_replay_service.ECGReplayService` is the backend dependency-injection seam. It accepts explicit model artifacts, exposes single-window and packet replay methods, and preserves model/preprocessing provenance in every response. A live HTTP route is intentionally deferred until the backend contract is agreed with the frontend.
+
+The `POST /replay/ecg` route now exposes the single-window contract. It loads artifacts lazily from `NHM_ECG_MODEL_CHECKPOINT` and `NHM_ECG_NORMALIZATION_STATS`, returns `503` when they are not configured, and never substitutes a synthetic prediction.
