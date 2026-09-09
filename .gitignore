@@ -12,6 +12,7 @@ health_monitor.db
 # Raw Datasets
 data/raw/
 data/processed/
+data/reports/*inventory.json
 !data/.gitkeep
 
 # Heavy Model Checkpoints

@@ -11,7 +11,7 @@ preprocessing_version: "1.0.0"
 data:
   raw_dir: "data/raw"
   processed_dir: "data/processed"
-  ptbxl_dir: "data/raw/ptbxl"
+  ptbxl_dir: "data/raw/ptbxl/1.0.3"
   mitbih_dir: "data/raw/mitbih"
   nstdb_dir: "data/raw/nstdb"
   wearable_dir: "data/raw/wearable"
@@ -20,9 +20,10 @@ data:
 
 # ─── PTB-XL Settings ────────────────────────────────────────
 ptbxl:
+  version: "1.0.3"
   sampling_rate: 500          # Hz; PTB-XL provides 100 and 500 Hz
   resample_to: 250            # Hz; canonical internal rate
-  lead: "II"                  # Primary lead for single-channel experiments
+  lead: "I"                   # Wearable-aligned primary experiment
   all_leads:
     - "I" 
     - "II" 

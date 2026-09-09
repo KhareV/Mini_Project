@@ -1,19 +1,17 @@
 """
 datasets/ptbxl.py — PTB-XL Dataset Loader
 ==========================================
-Loads the PTB-XL ECG dataset (PhysioNet, v1.0.2) using WFDB.
+Loads the PTB-XL ECG dataset (PhysioNet, v1.0.3) using WFDB.
 
 Official source:
-  https://physionet.org/content/ptb-xl/1.0.2/
+  https://physionet.org/content/ptb-xl/1.0.3/
 
 Expected local path (configurable):
   data/raw/ptbxl/
 
 Download instructions:
   pip install wfdb
-  python -c "import wfdb; wfdb.dl_database('ptb-xl', dl_dir='data/raw/ptbxl')"
-  -- OR --
-  wget -r -N -c -np https://physionet.org/files/ptb-xl/1.0.2/ -P data/raw/ptbxl
+  python scripts/prepare_ptbxl.py download
 
 Canonical label mapping:
   NORM  → NORMAL  (0)
@@ -25,7 +23,8 @@ Canonical label mapping:
 Preprocessing version: read from configs/ecg_preprocessing.yaml
 """
 
-import os
+import ast
+import hashlib
 import logging
 import json
 from pathlib import Path
@@ -62,13 +61,14 @@ class PTBXLRecord:
     n_samples: int                     # number of samples in record
     n_leads: int                       # 12
     lead_names: List[str]              # ['I', 'II', ...]
-    label_raw: str                     # original superclass e.g. "NORM"
+    label_raw: str                     # pipe-separated diagnostic superclasses
     label_canonical: str               # "NORMAL" or "ABNORMAL"
     label_int: int                     # 0 or 1
     age: Optional[float] = None
     sex: Optional[str] = None
     source_dataset: str = "ptbxl"
-    dataset_version: str = "1.0.2"
+    label_status: str = "resolved"     # resolved | conflict | unsupported
+    dataset_version: str = "1.0.3"
     file_path: str = ""
     is_valid: bool = True
     validation_notes: List[str] = field(default_factory=list)
@@ -87,6 +87,9 @@ class PTBXLValidationReport:
     sampling_rate_distribution: Dict[int, int] = field(default_factory=dict)
     invalid_reasons: Dict[str, int] = field(default_factory=dict)
     patient_record_counts: Dict[str, int] = field(default_factory=dict)
+    n_label_conflicts: int = 0
+    n_multilabel: int = 0
+    missing_file_pairs: int = 0
 
 
 # ─── PTB-XL Dataset Class ────────────────────────────────────────────────────
@@ -116,13 +119,15 @@ class PTBXLDataset:
         self,
         data_dir: str = "data/raw/ptbxl",
         sampling_rate: int = 500,
-        target_lead: str = "II",
+        target_lead: str = "I",
         preprocessing_version: str = "1.0.0",
+        dataset_version: str = "1.0.3",
     ):
         self.data_dir = Path(data_dir)
         self.sampling_rate = sampling_rate
         self.target_lead = target_lead
         self.preprocessing_version = preprocessing_version
+        self.dataset_version = dataset_version
         self._records: Optional[List[PTBXLRecord]] = None
         self._metadata_df: Optional[pd.DataFrame] = None
         self._scp_statements: Optional[pd.DataFrame] = None
@@ -169,9 +174,17 @@ class PTBXLDataset:
 
         df = pd.read_csv(self.metadata_path, index_col="ecg_id")
         # Parse the scp_codes JSON column
-        df["scp_codes"] = df["scp_codes"].apply(
-            lambda x: json.loads(x.replace("'", '"')) if isinstance(x, str) else {}
-        )
+        def parse_codes(value):
+            if isinstance(value, dict):
+                return value
+            if not isinstance(value, str):
+                return {}
+            parsed = ast.literal_eval(value)
+            if not isinstance(parsed, dict):
+                raise ValueError("scp_codes must decode to a dictionary")
+            return parsed
+
+        df["scp_codes"] = df["scp_codes"].apply(parse_codes)
         self._metadata_df = df
         logger.info(f"Loaded PTB-XL metadata: {len(df)} records")
         return df
@@ -214,6 +227,28 @@ class PTBXLDataset:
         # Pick the highest-confidence superclass
         return max(superclass_scores, key=superclass_scores.get)
 
+    def resolve_label(self, scp_codes: dict, scp_df: pd.DataFrame) -> Tuple[List[str], str, int, str]:
+        """Resolve all diagnostic superclasses without hiding label conflicts."""
+        superclasses = set()
+        for code in scp_codes:
+            if code not in scp_df.index:
+                continue
+            row = scp_df.loc[code]
+            superclass = row.get("diagnostic_class")
+            if bool(row.get("diagnostic", 0)) and isinstance(superclass, str) and superclass.strip():
+                superclasses.add(superclass.strip())
+
+        ordered = sorted(superclasses)
+        has_normal = "NORM" in superclasses
+        has_abnormal = bool(superclasses.intersection({"MI", "STTC", "CD", "HYP"}))
+        if has_normal and has_abnormal:
+            return ordered, "CONFLICT", -1, "conflict"
+        if has_abnormal:
+            return ordered, "ABNORMAL", 1, "resolved"
+        if has_normal:
+            return ordered, "NORMAL", 0, "resolved"
+        return ordered, "UNKNOWN", -1, "unsupported"
+
     # ── Record Loading ────────────────────────────────────────────────────────
 
     def load_all_records(self, max_records: Optional[int] = None) -> List[PTBXLRecord]:
@@ -254,6 +289,7 @@ class PTBXLDataset:
                     label_raw="UNKNOWN",
                     label_canonical="UNKNOWN",
                     label_int=-1,
+                    label_status="unsupported",
                     is_valid=False,
                     validation_notes=[str(exc)],
                 ))
@@ -273,15 +309,9 @@ class PTBXLDataset:
         if not isinstance(scp_codes, dict):
             scp_codes = {}
 
-        superclass = self.resolve_superclass(scp_codes, scp_df)
-        if superclass is None:
-            raise ValueError(f"Could not resolve superclass for ecg_id={ecg_id}")
-
-        if superclass not in PTBXL_SUPERCLASS_TO_CANONICAL:
-            raise ValueError(f"Unknown superclass '{superclass}'")
-
-        canonical = PTBXL_SUPERCLASS_TO_CANONICAL[superclass]
-        label_int = CANONICAL_TO_INT[canonical]
+        superclasses, canonical, label_int, label_status = self.resolve_label(
+            scp_codes, scp_df
+        )
 
         # Build file path
         filename_lr = row.get("filename_lr", "")
@@ -295,24 +325,46 @@ class PTBXLDataset:
             raise ValueError(f"No filename for ecg_id={ecg_id}")
 
         file_path = str(self.data_dir / rel_path)
+        header_path = Path(f"{file_path}.hea")
+        data_path = Path(f"{file_path}.dat")
+        notes = []
+        if not header_path.is_file():
+            notes.append("Missing header file")
+        if not data_path.is_file():
+            notes.append("Missing signal file")
+
+        n_samples = 0
+        n_leads = 12
+        lead_names = list(self.LEAD_NAMES)
+        if not notes:
+            try:
+                import wfdb
+                header = wfdb.rdheader(file_path)
+                n_samples = int(header.sig_len)
+                n_leads = int(header.n_sig)
+                lead_names = list(header.sig_name)
+            except Exception as exc:
+                notes.append(f"Invalid WFDB header: {exc}")
 
         return PTBXLRecord(
             record_id=rel_path,
             participant_id=str(int(row.get("patient_id", 0))),
             ecg_id=int(ecg_id),
             sampling_rate=self.sampling_rate,
-            n_samples=int(row.get("recording_date", 0)),  # placeholder; actual from wfdb
-            n_leads=12,
-            lead_names=self.LEAD_NAMES,
-            label_raw=superclass,
+            n_samples=n_samples,
+            n_leads=n_leads,
+            lead_names=lead_names,
+            label_raw="|".join(superclasses) if superclasses else "UNKNOWN",
             label_canonical=canonical,
             label_int=label_int,
             age=row.get("age", None),
             sex=row.get("sex", None),
             source_dataset="ptbxl",
-            dataset_version="1.0.2",
+            label_status=label_status,
+            dataset_version=self.dataset_version,
             file_path=file_path,
-            is_valid=True,
+            is_valid=not notes and label_status == "resolved",
+            validation_notes=notes + ([] if label_status == "resolved" else [f"Label {label_status}"]),
         )
 
     # ── Signal Loading ────────────────────────────────────────────────────────
@@ -381,6 +433,10 @@ class PTBXLDataset:
 
             if not rec.is_valid:
                 report.invalid_records += 1
+                if rec.label_status == "conflict":
+                    report.n_label_conflicts += 1
+                if any(note.startswith("Missing") for note in rec.validation_notes):
+                    report.missing_file_pairs += 1
                 for note in rec.validation_notes:
                     reason_counts[note[:80]] = reason_counts.get(note[:80], 0) + 1
                 continue
@@ -398,7 +454,12 @@ class PTBXLDataset:
                 )
                 continue
 
+            if not rec.is_valid:
+                continue
+
             report.valid_records += 1
+            if "|" in rec.label_raw:
+                report.n_multilabel += 1
             if rec.label_canonical == "NORMAL":
                 report.n_normal += 1
             elif rec.label_canonical == "ABNORMAL":
@@ -464,9 +525,12 @@ class PTBXLDataset:
                 "label_raw": r.label_raw,
                 "label_canonical": r.label_canonical,
                 "label_int": r.label_int,
+                "label_status": r.label_status,
                 "age": r.age,
                 "sex": r.sex,
                 "preprocessing_version": self.preprocessing_version,
+                "n_samples": r.n_samples,
+                "n_leads": r.n_leads,
                 "split": "",      # filled by generate_splits()
             })
 
@@ -505,8 +569,15 @@ class PTBXLDataset:
         -------
         DataFrame with 'split' column filled in.
         """
+        if manifest_df.empty:
+            raise ValueError("Cannot split an empty PTB-XL manifest")
+        if not 0 < val_fraction < 1 or not 0 < test_fraction < 1:
+            raise ValueError("Validation and test fractions must be between 0 and 1")
+        if val_fraction + test_fraction >= 1:
+            raise ValueError("Validation and test fractions must sum to less than 1")
+
         rng = np.random.RandomState(seed)
-        patients = manifest_df["participant_id"].unique()
+        patients = manifest_df["participant_id"].astype(str).unique()
         patients = np.array(sorted(patients))  # sort first for determinism
         rng.shuffle(patients)
 
@@ -540,9 +611,21 @@ class PTBXLDataset:
         assert len(train_patients & val_patients) == 0, "LEAK: train ∩ val"
         assert len(train_patients & test_patients) == 0, "LEAK: train ∩ test"
         assert len(val_patients & test_patients) == 0, "LEAK: val ∩ test"
+        assert manifest_df.groupby("participant_id")["split"].nunique().max() == 1
 
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         manifest_df.to_csv(output_path, index=False)
+        digest = hashlib.sha256(Path(output_path).read_bytes()).hexdigest()
+        Path(f"{output_path}.metadata.json").write_text(json.dumps({
+            "dataset": "ptbxl",
+            "dataset_version": self.dataset_version,
+            "seed": seed,
+            "val_fraction": val_fraction,
+            "test_fraction": test_fraction,
+            "sha256": digest,
+            "records": len(manifest_df),
+            "patients": int(manifest_df["participant_id"].nunique()),
+        }, indent=2) + "\n", encoding="utf-8")
         logger.info(f"Splits saved: {output_path}")
         return manifest_df
 
@@ -566,6 +649,9 @@ class PTBXLDataset:
         print(f"  NORMAL:         {report.n_normal}")
         print(f"  ABNORMAL:       {report.n_abnormal}")
         print(f"  Excluded:       {report.n_excluded}")
+        print(f"  Label conflicts:{report.n_label_conflicts}")
+        print(f"  Multi-label:    {report.n_multilabel}")
+        print(f"  Missing pairs:  {report.missing_file_pairs}")
         print(f"\nSampling rates: {report.sampling_rate_distribution}")
         if report.invalid_reasons:
             print("\nInvalid reasons:")

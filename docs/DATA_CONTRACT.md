@@ -1,6 +1,6 @@
 # P1 ECG Data Contract
 
-This document defines the canonical format for all ECG data flowing through the P1 pipeline, ensuring interoperability between public datasets (PTB-XL, MIT-BIH) and real wearable hardware (AD8232/ESP32).
+This document defines the canonical format for all ECG data flowing through the pipeline, ensuring interoperability between public datasets (PTB-XL, MIT-BIH) and real wearable hardware (AD8232/ESP32). The authoritative project-wide rules are in `docs/ML_SYSTEM_SPEC.md`.
 
 ## Canonical Representation
 

@@ -1,0 +1,42 @@
+{
+  "dataset": "ptbxl",
+  "version": "1.0.3",
+  "metadata_records": 21799,
+  "outcomes": {
+    "ABNORMAL:resolved": 11874,
+    "CONFLICT:conflict": 445,
+    "NORMAL:resolved": 9069,
+    "UNKNOWN:unsupported": 411
+  },
+  "superclass_combinations": {
+    "NORM": 9069,
+    "MI": 2532,
+    "STTC": 2400,
+    "CD": 1708,
+    "CD|MI": 1297,
+    "HYP|STTC": 781,
+    "MI|STTC": 599,
+    "HYP": 535,
+    "CD|STTC": 471,
+    "UNKNOWN": 411,
+    "CD|NORM": 407,
+    "HYP|MI|STTC": 361,
+    "CD|HYP": 300,
+    "CD|MI|STTC": 223,
+    "CD|HYP|STTC": 211,
+    "HYP|MI": 183,
+    "CD|HYP|MI|STTC": 156,
+    "CD|HYP|MI": 117,
+    "NORM|STTC": 28,
+    "CD|NORM|STTC": 5,
+    "CD|HYP|NORM": 2,
+    "HYP|NORM": 2,
+    "CD|HYP|MI|NORM": 1
+  },
+  "policy": {
+    "normal_only": "NORMAL",
+    "one_or_more_abnormal_without_normal": "ABNORMAL",
+    "normal_and_abnormal": "EXCLUDE_AS_CONFLICT",
+    "no_supported_diagnostic_superclass": "EXCLUDE_AS_UNSUPPORTED"
+  }
+}
