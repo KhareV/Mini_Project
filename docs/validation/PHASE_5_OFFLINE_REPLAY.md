@@ -11,3 +11,13 @@ The replay path is deterministic for the same checkpoint, normalization artifact
 `backend.ml.ecg_replay_service.ECGReplayService` is the backend dependency-injection seam. It accepts explicit model artifacts, exposes single-window and packet replay methods, and preserves model/preprocessing provenance in every response. A live HTTP route is intentionally deferred until the backend contract is agreed with the frontend.
 
 The `POST /replay/ecg` route now exposes the single-window contract. It loads artifacts lazily from `NHM_ECG_MODEL_CHECKPOINT` and `NHM_ECG_NORMALIZATION_STATS`, returns `503` when they are not configured, and never substitutes a synthetic prediction.
+
+Run a captured-record end-to-end replay with:
+
+```bash
+python3 scripts/replay_ptbxl.py \
+  --data-dir ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.1 \
+  --checkpoint experiments/phase4_ptbxl_v1/E04_ecg_cnn/best_checkpoint.pt \
+  --normalization experiments/phase4_ptbxl_v1/E04_ecg_cnn/normalization_stats.json \
+  --packet-samples 125 --jitter-ms 4 --drop-every 0
+```
