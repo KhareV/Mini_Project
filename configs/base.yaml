@@ -1,0 +1,71 @@
+# Authoritative machine-readable defaults. See docs/ML_SYSTEM_SPEC.md.
+spec_version: "1.0.0"
+project:
+  name: "NHM"
+  owner_model: "solo"
+  research_only: true
+
+seed: 42
+
+data:
+  ptbxl:
+    version: "1.0.3"
+    role: "primary_development"
+    source_rate_hz: 500
+    primary_lead: "I"
+  mitbih:
+    version: "1.0.0"
+    role: "external_validation_only"
+    primary_lead: "MLII"
+  nstdb:
+    version: "1.0.0"
+    role: "noise_robustness_only"
+  bidmc:
+    version: "1.0.0"
+    role: "multimodal_development"
+
+split:
+  unit: "participant"
+  train_fraction: 0.70
+  validation_fraction: 0.15
+  test_fraction: 0.15
+
+signal:
+  canonical_ecg_rate_hz: 250
+  ecg_window_seconds: 10
+  ecg_stride_seconds: 5
+
+outputs:
+  physiological_classes:
+    NORMAL: 0
+    ABNORMAL: 1
+  unreliable_state: "UNRELIABLE"
+
+evaluation:
+  selection_split: "validation"
+  threshold_split: "validation"
+  calibration_split: "validation"
+  test_for_tuning: false
+  required_metrics:
+    - precision
+    - recall
+    - specificity
+    - f1
+    - auroc
+    - auprc
+    - brier_score
+
+federated:
+  prerequisite_model_state: "FROZEN"
+  algorithm_order:
+    - fedavg_iid
+    - fedavg_non_iid
+    - fedprox_non_iid
+    - qapfl_non_iid
+
+hardware:
+  integration_order:
+    - capture
+    - replay
+    - serial
+    - ble
