@@ -1,0 +1,27 @@
+{
+  "experiment": "E04_ecg_cnn",
+  "best_val_f1": 0.8225,
+  "decision_threshold": 0.554572,
+  "validation_f1_at_threshold": 0.8259,
+  "test": {
+    "accuracy": 0.7878,
+    "precision": 0.8146,
+    "recall": 0.8155,
+    "f1": 0.815,
+    "specificity": 0.7506,
+    "false_positive_rate": 0.2494,
+    "auroc": 0.8746,
+    "auprc": 0.9187,
+    "tp": 1485,
+    "tn": 1017,
+    "fp": 338,
+    "fn": 336,
+    "n_total": 3176,
+    "n_normal": 1355,
+    "n_abnormal": 1821,
+    "split": "test",
+    "model_name": "ecg_cnn_MODEL_V1",
+    "dataset": "PTBXL_1.0.1",
+    "notes": ""
+  }
+}

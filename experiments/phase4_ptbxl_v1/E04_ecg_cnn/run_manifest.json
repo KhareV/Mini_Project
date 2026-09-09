@@ -1,0 +1,40 @@
+{
+  "experiment_group": "phase-4-centralized-ecg-cnn",
+  "created_at_utc": "2026-09-09T13:55:48.613181+00:00",
+  "git_commit": "d3ef2659079bcc8b899fdee6ecbd6d8abc61fdce",
+  "dataset": "PTBXL_1.0.1",
+  "synthetic": false,
+  "research_claim_boundary": "Public-dataset run: see dataset and split artifacts.",
+  "seed": 42,
+  "split_counts": {
+    "train": 14649,
+    "val": 3160,
+    "test": 3176
+  },
+  "dataset_details": {
+    "source_fs": 500,
+    "dataset_version": "1.0.1",
+    "lead": "I",
+    "participant_split": "patient_level"
+  },
+  "preprocessing": {
+    "preprocessing_version": "1.1.0",
+    "target_fs": 250,
+    "bandpass_low": 0.5,
+    "bandpass_high": 40.0,
+    "notch_freq": 50.0,
+    "notch_q": 30.0,
+    "clip_std_multiplier": 5.0,
+    "filter_order": 4,
+    "requires_normalization_stats": true
+  },
+  "preprocessing_sha256": "19a2c0af13bd4080dec843dd29053f109110e49724acca73f6c4fe64c245e92c",
+  "normalization_stats": {
+    "mean": 2.9157910830690525e-05,
+    "std": 0.15103673934936523,
+    "n_samples_used": 36622500,
+    "preprocessing_version": "1.1.0"
+  },
+  "normalization_sha256": "5537756a7944f10fc3586341933fdf146a0b3732067d2616070568f5e7f2ccbf",
+  "test_used_for_tuning": false
+}
