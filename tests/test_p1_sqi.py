@@ -64,6 +64,11 @@ def clipped_signal(n=2500):
 
 class TestECGQualityAssessor:
 
+    def test_empty_signal_is_unusable(self, assessor):
+        result = assessor.assess(np.array([], dtype=np.float32))
+        assert result.is_usable is False
+        assert result.quality_state == "POOR"
+
     def test_clean_ecg_is_good_quality(self, assessor):
         sig = clean_ecg(noise=0.02)
         result = assessor.assess(sig)

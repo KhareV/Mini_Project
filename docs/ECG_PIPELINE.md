@@ -12,7 +12,7 @@ This document outlines the standard canonical preprocessing steps applied to all
 
 Implemented in `preprocessing.ecg.ECGPreprocessor`:
 
-1. **Input Validation:** Handle `NaN`/`Inf` (replaced with 0.0), flag empty signals.
+1. **Input Validation:** Handle `NaN`/`Inf` (replaced with 0.0), flag empty signals and invalid sampling rates.
 2. **Resampling:** Convert input sampling rate to the canonical `250 Hz` using a robust polyphase filter (`scipy.signal.resample_poly`).
 3. **Bandpass Filtering (0.5 - 40 Hz):**
    - Uses a 4th-order Butterworth filter (applied via `sosfiltfilt` for zero-phase).
@@ -22,7 +22,7 @@ Implemented in `preprocessing.ecg.ECGPreprocessor`:
    - 50 Hz default (configurable in `ecg_preprocessing.yaml`).
 5. **Z-Score Normalization:**
    - `signal = (signal - mean) / std`
-   - Training stats must be passed during inference.
+   - Training stats must be passed during reportable evaluation and inference; preprocessing v1.1.0 rejects missing stats in strict mode.
 6. **Clipping:**
    - Limit extreme outliers: values clamped to `±5σ` (configurable).
 

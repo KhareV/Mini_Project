@@ -22,7 +22,7 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-PREPROCESSING_VERSION = "1.0.0"
+PREPROCESSING_VERSION = "1.1.0"
 
 
 @dataclass

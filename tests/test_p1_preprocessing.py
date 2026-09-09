@@ -87,7 +87,7 @@ class TestECGPreprocessor:
 
     def test_version_in_output(self, preprocessor, clean_ecg):
         result = preprocessor.process(clean_ecg, 250)
-        assert result.preprocessing_version == "1.0.0"
+        assert result.preprocessing_version == "1.1.0"
 
     def test_provenance_in_output(self, preprocessor, clean_ecg):
         result = preprocessor.process(clean_ecg, 250, record_id="rec42",
@@ -106,6 +106,18 @@ class TestECGPreprocessor:
         assert result.normalization_mean == 0.0
         assert result.normalization_std == 0.5
 
+    def test_strict_pipeline_rejects_missing_training_artifact(self, clean_ecg):
+        preprocessor = ECGPreprocessor(require_normalization_stats=True)
+        result = preprocessor.process(clean_ecg, 250)
+        assert result.is_valid is False
+        assert result.normalization_source == "none"
+        assert "Training-derived" in result.validation_notes[0]
+
+    def test_invalid_sampling_rate_is_rejected(self, clean_ecg):
+        result = ECGPreprocessor().process(clean_ecg, 0)
+        assert result.is_valid is False
+        assert result.normalization_source == "none"
+
 
 class TestNormalizationStats:
 
@@ -122,6 +134,24 @@ class TestNormalizationStats:
         stats2 = NormalizationStats.from_dict(d)
         assert stats2.mean == stats.mean
         assert stats2.std == stats.std
+
+    def test_fit_filtered_training_stats_round_trip(self, tmp_path):
+        raw_training = [
+            synthesize_ecg_segment(2500, 250, noise_std=0.02, seed=seed)
+            for seed in range(3)
+        ]
+        fitter = ECGPreprocessor()
+        stats = fitter.fit_normalization_stats(raw_training, 250)
+        artifact = tmp_path / "normalization_stats.json"
+        stats.save(artifact)
+        loaded = NormalizationStats.load(artifact)
+        strict = ECGPreprocessor(
+            normalization_stats=loaded, require_normalization_stats=True
+        )
+        result = strict.process(raw_training[0], 250)
+        assert result.is_valid
+        assert result.normalization_source == "training_artifact"
+        assert result.normalization_mean == loaded.mean
 
 
 class TestSynthesizeECG:

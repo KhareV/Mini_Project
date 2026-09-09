@@ -23,7 +23,7 @@ This roadmap is executed by one maintainer. Every phase follows the same loop:
 |---:|---|---|---|
 | 0 | System, evaluation, data, hardware, and version-control contracts | Contract tests and document review | IMPLEMENTED |
 | 1 | Reproducible PTB-XL 1.0.3 data foundation | Completeness report, hashes, zero participant leakage | IN_PROGRESS (metadata validated) |
-| 2 | Frozen canonical ECG preprocessing and SQI | Synthetic/filter tests plus real-record audit | SCAFFOLDED |
+| 2 | Frozen canonical ECG preprocessing and SQI | Synthetic/filter tests plus real-record audit | VALIDATED_ON_SYNTHETIC_FIXTURES |
 | 3 | Centralized classical reference models | Reproducible PTB-XL validation runs | SCAFFOLDED |
 | 4 | Calibrated centralized ECG CNN and MODEL_V1 | Locked threshold; internal and external reports | SCAFFOLDED |
 | 5 | Backend WFDB/captured-file replay using MODEL_V1 | Offline/stream prediction equivalence | SCAFFOLDED |

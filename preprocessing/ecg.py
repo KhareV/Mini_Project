@@ -22,8 +22,10 @@ This module is the single canonical preprocessing path for:
 Do NOT create separate pipelines for different datasets.
 """
 
+import json
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional, Tuple, Dict, Any
 
 import numpy as np
@@ -32,7 +34,7 @@ from scipy import signal as scipy_signal
 logger = logging.getLogger(__name__)
 
 # ─── Preprocessing Version ────────────────────────────────────────────────────
-PREPROCESSING_VERSION = "1.0.0"
+PREPROCESSING_VERSION = "1.1.0"
 TARGET_FS = 250  # Hz — canonical sampling rate
 
 
@@ -54,6 +56,7 @@ class PreprocessedECG:
     was_resampled: bool
     normalization_mean: float       # Mean used for z-score (from training)
     normalization_std: float        # Std used for z-score (from training)
+    normalization_source: str = "per_signal"
     is_valid: bool = True
     validation_notes: list = None
 
@@ -85,6 +88,16 @@ class NormalizationStats:
             n_samples_used=len(all_values),
             preprocessing_version=preprocessing_version,
         )
+
+    def save(self, path: str) -> None:
+        """Persist the training-only artifact that must accompany a model."""
+        destination = Path(path)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(json.dumps(self.to_dict(), indent=2) + "\n", encoding="utf-8")
+
+    @classmethod
+    def load(cls, path: str) -> "NormalizationStats":
+        return cls.from_dict(json.loads(Path(path).read_text(encoding="utf-8")))
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -124,7 +137,9 @@ class ECGPreprocessor:
         Clip values beyond ±N×std after normalization.
     normalization_stats : NormalizationStats, optional
         Pre-fitted stats from training data. If None, per-signal z-score is used
-        (only acceptable when computing training statistics, not during eval).
+        (only acceptable for exploratory synthetic work, never evaluation).
+    require_normalization_stats : bool
+        Reject reportable preprocessing when a training-derived artifact is absent.
     """
 
     def __init__(
@@ -137,6 +152,7 @@ class ECGPreprocessor:
         clip_std_multiplier: float = 5.0,
         normalization_stats: Optional[NormalizationStats] = None,
         filter_order: int = 4,
+        require_normalization_stats: bool = False,
     ):
         self.target_fs = target_fs
         self.bandpass_low = bandpass_low
@@ -146,6 +162,7 @@ class ECGPreprocessor:
         self.clip_std_multiplier = clip_std_multiplier
         self.normalization_stats = normalization_stats
         self.filter_order = filter_order
+        self.require_normalization_stats = require_normalization_stats
         self._preprocessing_version = PREPROCESSING_VERSION
 
         # Pre-compute filter coefficients at target_fs for efficiency
@@ -236,11 +253,52 @@ class ECGPreprocessor:
             mean = self.normalization_stats.mean
             std = self.normalization_stats.std
         else:
+            if self.require_normalization_stats:
+                raise RuntimeError(
+                    "Training-derived NormalizationStats are required for this "
+                    "pipeline. Fit them on the training partition and load the artifact."
+                )
             mean = float(np.mean(sig))
             std = float(np.std(sig) + 1e-8)
 
         normalized = (sig - mean) / std
         return normalized.astype(np.float32), mean, std
+
+    def transform_before_normalization(
+        self, raw_signal: np.ndarray, source_fs: int
+    ) -> np.ndarray:
+        """Apply deterministic validation, resampling, and filters only.
+
+        This is the only representation from which training normalization
+        statistics may be fitted. It prevents fitting statistics on raw signals
+        while applying them to filtered signals later.
+        """
+        if not isinstance(source_fs, (int, float)) or source_fs <= 0:
+            raise ValueError("source_fs must be a positive number")
+        sig = np.asarray(raw_signal, dtype=np.float32).flatten()
+        if not len(sig):
+            raise ValueError("Cannot fit preprocessing statistics on an empty signal")
+        if not np.isfinite(sig).all():
+            sig = np.where(np.isfinite(sig), sig, 0.0)
+        if source_fs != self.target_fs:
+            sig = self.resample(sig, int(source_fs))
+        sig = self.apply_bandpass(sig)
+        sig = self.apply_notch(sig)
+        return sig.astype(np.float32)
+
+    def fit_normalization_stats(
+        self, raw_signals: list, source_fs: int
+    ) -> NormalizationStats:
+        """Fit statistics from training signals after canonical filtering only."""
+        if not raw_signals:
+            raise ValueError("At least one training signal is required")
+        filtered = [
+            self.transform_before_normalization(signal, source_fs)
+            for signal in raw_signals
+        ]
+        return NormalizationStats.from_signals(
+            filtered, preprocessing_version=self._preprocessing_version
+        )
 
     def clip(self, sig: np.ndarray) -> np.ndarray:
         """Clip values beyond ±clip_std_multiplier (assuming signal is already normalized)."""
@@ -274,6 +332,17 @@ class ECGPreprocessor:
         issues = []
         sig = np.array(raw_signal, dtype=np.float32).flatten()
 
+        if not isinstance(source_fs, (int, float)) or source_fs <= 0:
+            return PreprocessedECG(
+                signal=sig, sampling_rate=self.target_fs,
+                original_sampling_rate=int(source_fs) if isinstance(source_fs, (int, float)) else 0,
+                n_samples=len(sig), preprocessing_version=self._preprocessing_version,
+                source_record_id=record_id, source_dataset=source_dataset,
+                was_resampled=False, normalization_mean=0.0,
+                normalization_std=1.0, normalization_source="none",
+                is_valid=False, validation_notes=["Invalid source sampling rate"],
+            )
+
         if len(sig) == 0:
             return PreprocessedECG(
                 signal=sig, sampling_rate=self.target_fs,
@@ -281,7 +350,7 @@ class ECGPreprocessor:
                 preprocessing_version=self._preprocessing_version,
                 source_record_id=record_id, source_dataset=source_dataset,
                 was_resampled=False, normalization_mean=0.0,
-                normalization_std=1.0, is_valid=False,
+                normalization_std=1.0, normalization_source="none", is_valid=False,
                 validation_notes=["Empty signal"],
             )
 
@@ -300,16 +369,43 @@ class ECGPreprocessor:
         try:
             sig = self.apply_bandpass(sig)
         except Exception as exc:
-            issues.append(f"Bandpass failed: {exc}")
+            return PreprocessedECG(
+                signal=sig, sampling_rate=self.target_fs,
+                original_sampling_rate=int(source_fs), n_samples=len(sig),
+                preprocessing_version=self._preprocessing_version,
+                source_record_id=record_id, source_dataset=source_dataset,
+                was_resampled=was_resampled, normalization_mean=0.0,
+                normalization_std=1.0, normalization_source="none", is_valid=False,
+                validation_notes=issues + [f"Bandpass failed: {exc}"],
+            )
 
         # ── Step 3: Notch filter ──────────────────────────────────────────────
         try:
             sig = self.apply_notch(sig)
         except Exception as exc:
-            issues.append(f"Notch failed: {exc}")
+            return PreprocessedECG(
+                signal=sig, sampling_rate=self.target_fs,
+                original_sampling_rate=int(source_fs), n_samples=len(sig),
+                preprocessing_version=self._preprocessing_version,
+                source_record_id=record_id, source_dataset=source_dataset,
+                was_resampled=was_resampled, normalization_mean=0.0,
+                normalization_std=1.0, normalization_source="none", is_valid=False,
+                validation_notes=issues + [f"Notch failed: {exc}"],
+            )
 
         # ── Step 4: Normalize ─────────────────────────────────────────────────
-        sig, norm_mean, norm_std = self.normalize(sig)
+        try:
+            sig, norm_mean, norm_std = self.normalize(sig)
+        except RuntimeError as exc:
+            return PreprocessedECG(
+                signal=sig, sampling_rate=self.target_fs,
+                original_sampling_rate=int(source_fs), n_samples=len(sig),
+                preprocessing_version=self._preprocessing_version,
+                source_record_id=record_id, source_dataset=source_dataset,
+                was_resampled=was_resampled, normalization_mean=0.0,
+                normalization_std=1.0, normalization_source="none", is_valid=False,
+                validation_notes=issues + [str(exc)],
+            )
 
         # ── Step 5: Clip ──────────────────────────────────────────────────────
         sig = self.clip(sig)
@@ -325,6 +421,7 @@ class ECGPreprocessor:
             was_resampled=was_resampled,
             normalization_mean=norm_mean,
             normalization_std=norm_std,
+            normalization_source=("training_artifact" if self.normalization_stats else "per_signal"),
             is_valid=True,
             validation_notes=issues,
         )
@@ -341,6 +438,7 @@ class ECGPreprocessor:
             "notch_q": self.notch_q,
             "clip_std_multiplier": self.clip_std_multiplier,
             "filter_order": self.filter_order,
+            "requires_normalization_stats": self.require_normalization_stats,
         }
 
 

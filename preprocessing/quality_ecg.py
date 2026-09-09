@@ -207,6 +207,18 @@ class ECGQualityAssessor:
         -------
         SQIResult
         """
+        signal = np.asarray(signal, dtype=np.float32).flatten()
+        if len(signal) == 0:
+            return SQIResult(
+                overall_sqi=0.0, snr_score=0.0, baseline_score=0.0,
+                amplitude_score=0.0, clipping_score=0.0, flatline_score=0.0,
+                quality_state="POOR", is_usable=False,
+                low_quality_reasons=["Empty signal"],
+                excellent_threshold=self.excellent_threshold,
+                good_threshold=self.good_threshold,
+                fair_threshold=self.fair_threshold,
+                reject_threshold=self.reject_threshold,
+            )
         if not np.isfinite(signal).all():
             return SQIResult(
                 overall_sqi=0.0, snr_score=0.0, baseline_score=0.0,
@@ -295,4 +307,17 @@ class ECGQualityAssessor:
             "quality_state": result.quality_state,
             "is_usable": result.is_usable,
             "low_quality_reasons": "; ".join(result.low_quality_reasons),
+        }
+
+    @property
+    def config_dict(self) -> dict:
+        """Serializable thresholds used to produce an SQI decision."""
+        return {
+            "excellent_threshold": self.excellent_threshold,
+            "good_threshold": self.good_threshold,
+            "fair_threshold": self.fair_threshold,
+            "reject_threshold": self.reject_threshold,
+            "flatline_std_threshold": self.flatline_std_threshold,
+            "clipping_fraction_max": self.clipping_fraction_max,
+            "fs": self.fs,
         }

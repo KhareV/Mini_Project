@@ -120,7 +120,7 @@ class PTBXLDataset:
         data_dir: str = "data/raw/ptbxl",
         sampling_rate: int = 500,
         target_lead: str = "I",
-        preprocessing_version: str = "1.0.0",
+        preprocessing_version: str = "1.1.0",
         dataset_version: str = "1.0.3",
     ):
         self.data_dir = Path(data_dir)
