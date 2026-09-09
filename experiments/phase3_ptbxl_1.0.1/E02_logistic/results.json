@@ -1,0 +1,52 @@
+{
+  "experiment": "E02_logistic_regression",
+  "training_time_s": 0.06,
+  "n_features": 42,
+  "dataset": "PTBXL_1.0.1",
+  "result_status": "RESEARCH_RESULT",
+  "seed": 42,
+  "results": {
+    "val": {
+      "accuracy": 0.7737,
+      "precision": 0.8389,
+      "recall": 0.7416,
+      "f1": 0.7873,
+      "specificity": 0.8154,
+      "false_positive_rate": 0.1846,
+      "auroc": 0.8545,
+      "auprc": 0.8943,
+      "tp": 1323,
+      "tn": 1122,
+      "fp": 254,
+      "fn": 461,
+      "n_total": 3160,
+      "n_normal": 1376,
+      "n_abnormal": 1784,
+      "split": "val",
+      "model_name": "logistic_regression",
+      "dataset": "PTBXL_1.0.1",
+      "notes": ""
+    },
+    "test": {
+      "accuracy": 0.7686,
+      "precision": 0.8445,
+      "recall": 0.7309,
+      "f1": 0.7836,
+      "specificity": 0.8192,
+      "false_positive_rate": 0.1808,
+      "auroc": 0.8477,
+      "auprc": 0.8893,
+      "tp": 1331,
+      "tn": 1110,
+      "fp": 245,
+      "fn": 490,
+      "n_total": 3176,
+      "n_normal": 1355,
+      "n_abnormal": 1821,
+      "split": "test",
+      "model_name": "logistic_regression",
+      "dataset": "PTBXL_1.0.1",
+      "notes": ""
+    }
+  }
+}

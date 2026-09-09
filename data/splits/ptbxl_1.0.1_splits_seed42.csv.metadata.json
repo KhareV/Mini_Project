@@ -1,0 +1,10 @@
+{
+  "dataset": "ptbxl",
+  "dataset_version": "1.0.1",
+  "seed": 42,
+  "val_fraction": 0.15,
+  "test_fraction": 0.15,
+  "sha256": "5da188b1e98b8a07220adab0bb806dcae500fa1efee2301a1b2969bd87da3c4d",
+  "records": 20985,
+  "patients": 18243
+}

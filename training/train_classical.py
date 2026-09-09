@@ -376,7 +376,11 @@ def main():
     parser.add_argument("--ptbxl", type=str, default=None,
                         help="Path to PTB-XL dataset root")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--output-dir", type=str, default="experiments/phase3_synthetic")
+    parser.add_argument("--output-dir", type=str, default=None)
+    parser.add_argument("--dataset-version", type=str, default="1.0.3",
+                        help="Explicit PTB-XL source version (kept in provenance)")
+    parser.add_argument("--sampling-rate", type=int, choices=(100, 500), default=500)
+    parser.add_argument("--lead", type=str, default="I")
     parser.add_argument("--n-normal", type=int, default=300)
     parser.add_argument("--n-abnormal", type=int, default=200)
     args = parser.parse_args()
@@ -391,37 +395,42 @@ def main():
     if args.ptbxl:
         logger.info(f"Loading PTB-XL from {args.ptbxl}...")
         from datasets.ptbxl import PTBXLDataset
-        dataset_obj = PTBXLDataset(data_dir=args.ptbxl)
+        dataset_obj = PTBXLDataset(
+            data_dir=args.ptbxl,
+            sampling_rate=args.sampling_rate,
+            target_lead=args.lead,
+            dataset_version=args.dataset_version,
+        )
         if not dataset_obj.is_available():
             logger.error("PTB-XL not found. Use --synthetic for demo.")
             sys.exit(1)
-        manifest = dataset_obj.build_manifest()
-        manifest = dataset_obj.generate_splits(manifest, seed=args.seed)
+        manifest_path = Path("data/manifests") / f"ptbxl_{args.dataset_version}_manifest.csv"
+        split_path = Path("data/splits") / f"ptbxl_{args.dataset_version}_splits_seed{args.seed}.csv"
+        manifest = dataset_obj.build_manifest(output_path=str(manifest_path))
+        manifest = dataset_obj.generate_splits(
+            manifest, seed=args.seed, output_path=str(split_path)
+        )
 
-        all_signals, all_labels, all_pids = [], [], []
-        for split in ["train", "val", "test"]:
-            split_rows = dataset_obj.get_split_records(manifest, split)
-            for _, row in split_rows.iterrows():
-                try:
-                    rec_obj = None
-                    for r in dataset_obj.load_all_records():
-                        if r.record_id == row["record_id"]:
-                            rec_obj = r
-                            break
-                    if rec_obj is None:
-                        continue
-                    sig, fs = dataset_obj.load_signal(rec_obj)
-                    all_signals.append(sig[:12500] if len(sig) > 12500 else sig)
-                    all_labels.append(int(row["label_int"]))
-                    all_pids.append(row["participant_id"])
-                except Exception as exc:
-                    logger.warning(f"Skip {row['record_id']}: {exc}")
+        all_signals, all_labels, all_pids, all_split_names = [], [], [], []
+        records_by_id = {r.record_id: r for r in dataset_obj.load_all_records()}
+        for _, row in manifest.iterrows():
+            try:
+                rec_obj = records_by_id.get(row["record_id"])
+                if rec_obj is None:
+                    continue
+                sig, fs = dataset_obj.load_signal(rec_obj)
+                all_signals.append(sig[:12500] if len(sig) > 12500 else sig)
+                all_labels.append(int(row["label_int"]))
+                all_pids.append(str(row["participant_id"]))
+                all_split_names.append(row["split"])
+            except Exception as exc:
+                logger.warning(f"Skip {row['record_id']}: {exc}")
 
         signals = np.array(all_signals)
         labels = np.array(all_labels)
         participant_ids = all_pids
-        dataset_name = "ptbxl"
-        source_fs = 500
+        dataset_name = f"PTBXL_{args.dataset_version}"
+        source_fs = args.sampling_rate
     else:
         logger.info(
             "Using SYNTHETIC data for development. "
@@ -433,15 +442,24 @@ def main():
         dataset_name = "SYNTHETIC"
         source_fs = 250
 
+    if args.output_dir is None:
+        args.output_dir = (
+            "experiments/phase3_synthetic"
+            if dataset_name == "SYNTHETIC"
+            else f"experiments/phase3_ptbxl_{args.dataset_version}"
+        )
+
     logger.info(
         f"Dataset: {len(signals)} signals, "
         f"NORMAL={sum(labels==0)}, ABNORMAL={sum(labels==1)}"
     )
 
     # ── Patient-level split ───────────────────────────────────────────────────
-    splits = patient_level_split_synthetic(
-        participant_ids, labels, seed=args.seed
-    )
+    if args.ptbxl:
+        splits = {name: [i for i, split in enumerate(all_split_names) if split == name]
+                  for name in ("train", "val", "test")}
+    else:
+        splits = patient_level_split_synthetic(participant_ids, labels, seed=args.seed)
     logger.info(
         f"Splits: train={len(splits['train'])}, "
         f"val={len(splits['val'])}, test={len(splits['test'])}"
@@ -475,6 +493,8 @@ def main():
         project_root=Path(__file__).parent.parent,
         dataset_details={
             "source_fs": source_fs,
+            "dataset_version": args.dataset_version if args.ptbxl else None,
+            "lead": args.lead if args.ptbxl else None,
             "n_normal_requested": args.n_normal if dataset_name == "SYNTHETIC" else None,
             "n_abnormal_requested": args.n_abnormal if dataset_name == "SYNTHETIC" else None,
             "participant_split": "patient_level",

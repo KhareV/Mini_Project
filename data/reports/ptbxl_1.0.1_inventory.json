@@ -1,0 +1,19 @@
+{
+  "dataset": "ptbxl",
+  "version": "1.0.1",
+  "status": "complete",
+  "data_dir": "ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.1",
+  "sampling_rate": 500,
+  "metadata_records": 21837,
+  "metadata_patients": 18885,
+  "required_signal_files": 43674,
+  "present_signal_files": 43674,
+  "missing_signal_files": 0,
+  "missing_examples": [],
+  "metadata_sha256": {
+    "ptbxl_database.csv": "cd9bf4e6445c5e022605857c4d6f90c90ff0e62df847da52efaebe94de786156",
+    "scp_statements.csv": "ad05b0b1fcae83bb1230755ad9cfc7c96f303feddc08a4a9ad5bdc9ca63bac8f",
+    "RECORDS": "71f2035b8b617f6ba11c8568794a0cd69f22a3e02d3b839d1212722d36aa67c0",
+    "LICENSE.txt": "9a78e7f22742dde9f66ae235ec793ba2212019dc4d0ced75c4da09ced0b35fb2"
+  }
+}

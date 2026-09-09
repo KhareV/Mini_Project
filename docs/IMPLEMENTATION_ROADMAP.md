@@ -22,9 +22,9 @@ This roadmap is executed by one maintainer. Every phase follows the same loop:
 | Phase | Outcome | Validation gate | Initial status |
 |---:|---|---|---|
 | 0 | System, evaluation, data, hardware, and version-control contracts | Contract tests and document review | IMPLEMENTED |
-| 1 | Reproducible PTB-XL 1.0.3 data foundation | Completeness report, hashes, zero participant leakage | IN_PROGRESS (metadata validated) |
+| 1 | Reproducible PTB-XL data foundation | Completeness report, hashes, zero participant leakage | VALIDATED (local 1.0.1 source; 1.0.3 remains target) |
 | 2 | Frozen canonical ECG preprocessing and SQI | Synthetic/filter tests plus real-record audit | VALIDATED_ON_SYNTHETIC_FIXTURES |
-| 3 | Centralized classical reference models | Reproducible PTB-XL validation runs | VALIDATED_ON_SYNTHETIC_FIXTURES |
+| 3 | Centralized classical reference models | Reproducible PTB-XL validation runs | VALIDATED (local 1.0.1 source) |
 | 4 | Calibrated centralized ECG CNN and MODEL_V1 | Locked threshold; internal and external reports | SCAFFOLDED |
 | 5 | Backend WFDB/captured-file replay using MODEL_V1 | Offline/stream prediction equivalence | SCAFFOLDED |
 | 6 | PPG, SpO2, BIDMC, and synchronization | Timestamp-alignment and quality tests | SCAFFOLDED |
@@ -41,7 +41,7 @@ This roadmap is executed by one maintainer. Every phase follows the same loop:
 
 Phase 1 is deliberately limited to data integrity:
 
-1. Standardize all PTB-XL references on version 1.0.3.
+1. Keep 1.0.3 as the canonical target; accept the locally supplied 1.0.1 archive only as an explicitly versioned source until 1.0.3 is available.
 2. Add a resumable acquisition/check script without committing raw records.
 3. Validate required metadata and WFDB file pairs.
 4. Correct manifest metadata such as sample counts and source paths.

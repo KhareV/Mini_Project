@@ -1,0 +1,20 @@
+{
+  "total_records": 21837,
+  "valid_records": 20985,
+  "invalid_records": 852,
+  "n_patients": 18885,
+  "n_normal": 9083,
+  "n_abnormal": 11902,
+  "n_excluded": 0,
+  "sampling_rate_distribution": {
+    "500": 21837
+  },
+  "invalid_reasons": {
+    "Label unsupported": 407,
+    "Label conflict": 445
+  },
+  "patient_record_counts": {},
+  "n_label_conflicts": 445,
+  "n_multilabel": 4713,
+  "missing_file_pairs": 0
+}

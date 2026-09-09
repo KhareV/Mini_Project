@@ -1,0 +1,50 @@
+{
+  "experiment": "E01_majority_baseline",
+  "majority_class": 1,
+  "dataset": "PTBXL_1.0.1",
+  "result_status": "RESEARCH_RESULT",
+  "results": {
+    "val": {
+      "accuracy": 0.5646,
+      "precision": 0.5646,
+      "recall": 1.0,
+      "f1": 0.7217,
+      "specificity": 0.0,
+      "false_positive_rate": 1.0,
+      "auroc": -1.0,
+      "auprc": -1.0,
+      "tp": 1784,
+      "tn": 0,
+      "fp": 1376,
+      "fn": 0,
+      "n_total": 3160,
+      "n_normal": 1376,
+      "n_abnormal": 1784,
+      "split": "val",
+      "model_name": "majority_baseline",
+      "dataset": "PTBXL_1.0.1",
+      "notes": "Predicts class 1 for all inputs"
+    },
+    "test": {
+      "accuracy": 0.5734,
+      "precision": 0.5734,
+      "recall": 1.0,
+      "f1": 0.7288,
+      "specificity": 0.0,
+      "false_positive_rate": 1.0,
+      "auroc": -1.0,
+      "auprc": -1.0,
+      "tp": 1821,
+      "tn": 0,
+      "fp": 1355,
+      "fn": 0,
+      "n_total": 3176,
+      "n_normal": 1355,
+      "n_abnormal": 1821,
+      "split": "test",
+      "model_name": "majority_baseline",
+      "dataset": "PTBXL_1.0.1",
+      "notes": "Predicts class 1 for all inputs"
+    }
+  }
+}

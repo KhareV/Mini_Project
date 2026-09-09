@@ -11,6 +11,8 @@ health_monitor.db
 
 # Raw Datasets
 data/raw/
+# Local copy of the externally supplied PTB-XL archive; never commit dataset bytes.
+/ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.1/
 data/processed/
 data/reports/*inventory.json
 !data/.gitkeep

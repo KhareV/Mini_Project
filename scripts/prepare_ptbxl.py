@@ -163,14 +163,18 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--metadata-only", action="store_true")
     parser.add_argument("--max-records", type=int)
+    parser.add_argument("--version", help="Override PTB-XL version for an existing local copy")
+    parser.add_argument("--sampling-rate", type=int, choices=(100, 500),
+                        help="Override source sampling rate")
+    parser.add_argument("--lead", help="Override target lead")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     config = load_config(args.config)
     settings = config["data"]["ptbxl"]
-    version = str(settings["version"])
-    sampling_rate = int(settings["source_rate_hz"])
-    lead = str(settings["primary_lead"])
+    version = str(args.version or settings["version"])
+    sampling_rate = int(args.sampling_rate or settings["source_rate_hz"])
+    lead = str(args.lead or settings["primary_lead"])
     data_dir = args.data_dir or ROOT / "data" / "raw" / "ptbxl" / version
     base_url = BASE_URL.format(version=version)
 
