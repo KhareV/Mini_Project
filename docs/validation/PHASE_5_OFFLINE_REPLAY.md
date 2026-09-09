@@ -5,3 +5,5 @@ The `inference.ECGModelV1` wrapper is the first integration seam between the tra
 The replay path is deterministic for the same checkpoint, normalization artifact, signal, and source sampling rate. The `ECGStreamReplayer` adapter emits only complete 10-second windows at a 5-second stride, accepts arbitrary packet boundaries, rejects non-finite samples, and produces the same windows for chunked and contiguous ingestion. Hardware transport is intentionally not included yet.
 
 `ECGPacketReplayer` adds sequence-aware transport replay. A missing or out-of-order packet increments the gap counters and resets the window buffer, so unknown samples are never silently bridged. Packet timing/jitter can therefore be tested independently from BLE or serial implementation.
+
+`inference.transport_simulator` creates seeded packet traces with configurable packet size, timestamp jitter, and periodic drops, then reports packets received, gaps detected, discontinuities, and predictions emitted. It is a test harness only; it does not claim real radio performance.
