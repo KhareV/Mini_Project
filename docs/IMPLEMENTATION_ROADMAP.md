@@ -28,7 +28,7 @@ This roadmap is executed by one maintainer. Every phase follows the same loop:
 | 4 | Calibrated centralized ECG CNN and MODEL_V1 | Locked threshold; internal and external reports | VALIDATED (internal PTB-XL 1.0.1; external pending) |
 | 5 | Backend WFDB/captured-file replay using MODEL_V1 | Offline/stream prediction equivalence | IMPLEMENTED (offline + deterministic stream replay) |
 | 6 | PPG, SpO2, BIDMC, and synchronization | Timestamp-alignment and quality tests | IMPLEMENTED (sync + quality + BIDMC loader contract; archive pending) |
-| 7 | Centralized multimodal model | Required ablations and missing-modality tests | NOT_STARTED |
+| 7 | Centralized multimodal model | Required ablations and missing-modality tests | IMPLEMENTED (architecture contract; BIDMC training pending) |
 | 8 | Deterministic federated client partitions | IID/non-IID manifest audits | NOT_STARTED |
 | 9 | Actual Flower FedAvg | Toy aggregation and IID convergence comparison | SCAFFOLDED |
 | 10 | FedProx, QAPFL, and heterogeneity study | Controlled same-budget comparisons | SCAFFOLDED |
