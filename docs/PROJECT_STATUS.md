@@ -12,7 +12,7 @@ Truth boundary: research prototype; not a medical device.
 | PTB-XL foundation | Validated on supplied local 1.0.1 archive | `docs/validation/PHASE_1B_REAL_PTBXL.md` |
 | ECG preprocessing/SQI | Validated on fixtures; strict train-only stats enforced | `docs/validation/PHASE_2_PREPROCESSING.md` |
 | Centralized classical baselines | Validated on PTB-XL 1.0.1 | `docs/validation/PHASE_3B_REAL_PTBXL.md` |
-| Centralized ECG CNN | Internally validated on PTB-XL 1.0.1; external validation pending | `docs/validation/PHASE_4_REAL_PTBXL.md` |
+| Centralized ECG CNN | Internally validated on PTB-XL 1.0.1; MIT-BIH external validation complete, robustness pending | `docs/validation/PHASE_4_REAL_PTBXL.md`, `docs/validation/MITBIH_MODEL_V1_EXTERNAL.md` |
 | Offline/stream/backend replay | Implemented and tested | `docs/validation/PHASE_5_OFFLINE_REPLAY.md` |
 | Hardware | Protocol/decoder preparation only; no device integration | `docs/validation/HARDWARE_PROTOCOL.md` |
 
@@ -20,16 +20,15 @@ The supplied dataset is PTB-XL 1.0.1. PTB-XL 1.0.3 remains the canonical target 
 
 ## What remains, in order
 
-1. Phase 6: PPG/SpO2 contracts, BIDMC acquisition, timestamp synchronization, quality and missing-modality tests.
-2. Phase 7: centralized late-fusion model and ablations.
-3. Phase 8: deterministic participant-based IID/non-IID federated manifests.
-4. Phase 9: actual Flower FedAvg against the centralized reference.
-5. Phase 10: FedProx/QAPFL controlled comparisons.
-6. Phase 11: secure aggregation and optional differential privacy.
-7. External MIT-BIH/NSTDB validation and robustness/calibration reporting integrated at the appropriate gates.
-8. Phase 12: hardware capture, serial, then BLE integration. This is deliberately last among system-building work.
-9. Phase 13: separately versioned edge model and measured device constraints.
-10. Phase 14: evidence-backed UI integration.
+1. MIT-BIH/NSTDB noise robustness using locked MODEL_V1; investigate the observed cross-dataset false-positive shift without test retuning.
+2. Complete Phase 6: PPG/SpO2, BIDMC acquisition, synchronization, and quality validation.
+3. Train/evaluate centralized multimodal fusion and required ablations.
+4. Complete streaming/event metrics and centralized hosted software integration.
+5. Freeze the centralized software system.
+6. Phase 12: hardware capture, serial, then BLE integration. This is deliberately last among system-building work.
+7. Phase 13: separately versioned edge model and measured device constraints.
+8. Only after hardware validation: real FedAvg, non-IID, FedProx, secure aggregation, and optional DP.
+9. Phase 14: evidence-backed UI integration and final system evidence.
 
 ## Explicit non-claims
 

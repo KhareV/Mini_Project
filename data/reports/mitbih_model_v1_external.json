@@ -1,0 +1,26 @@
+{
+  "dataset": "MIT-BIH_1.0.0",
+  "windows": 16559,
+  "threshold": 0.554572,
+  "metrics": {
+    "accuracy": 0.2722,
+    "precision": 0.25,
+    "recall": 1.0,
+    "f1": 0.4001,
+    "specificity": 0.0391,
+    "false_positive_rate": 0.9609,
+    "auroc": 0.7325,
+    "auprc": 0.5048,
+    "tp": 4018,
+    "tn": 490,
+    "fp": 12051,
+    "fn": 0,
+    "n_total": 16559,
+    "n_normal": 12541,
+    "n_abnormal": 4018,
+    "split": "external",
+    "model_name": "MODEL_V1",
+    "dataset": "MIT-BIH_1.0.0",
+    "notes": "Locked PTB-XL model; no MIT-BIH fitting or tuning"
+  }
+}

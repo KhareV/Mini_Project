@@ -40,10 +40,16 @@ def verify_artifacts() -> list[str]:
         raise RuntimeError("Phase 4 results are missing test split metadata")
     checks.append("Phase 4: calibrated MODEL_V1 evidence present")
 
+    external = load_json("data/reports/mitbih_model_v1_external.json")
+    if external.get("metrics", {}).get("split") != "external":
+        raise RuntimeError("MIT-BIH report is not marked external")
+    checks.append("External validation: locked MIT-BIH report present")
+
     for path in ("docs/PROJECT_STATUS.md", "docs/validation/PHASE_5_OFFLINE_REPLAY.md",
                  "docs/validation/PHASE_6_BIDMC_CONTRACT.md",
                  "docs/validation/PHASE_8_PARTITIONS.md",
-                 "docs/validation/PHASE_9_FEDAVG_BASELINE.md"):
+                 "docs/validation/PHASE_9_FEDAVG_BASELINE.md",
+                 "docs/validation/MITBIH_MODEL_V1_EXTERNAL.md"):
         if not (ROOT / path).is_file():
             raise RuntimeError(f"missing phase documentation: {path}")
     checks.append("Phase 0–9 validation documentation present")

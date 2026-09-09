@@ -25,12 +25,12 @@ This roadmap is executed by one maintainer. Every phase follows the same loop:
 | 1 | Reproducible PTB-XL data foundation | Completeness report, hashes, zero participant leakage | VALIDATED (local 1.0.1 source; 1.0.3 remains target) |
 | 2 | Frozen canonical ECG preprocessing and SQI | Synthetic/filter tests plus real-record audit | VALIDATED_ON_SYNTHETIC_FIXTURES |
 | 3 | Centralized classical reference models | Reproducible PTB-XL validation runs | VALIDATED (local 1.0.1 source) |
-| 4 | Calibrated centralized ECG CNN and MODEL_V1 | Locked threshold; internal and external reports | IMPLEMENTED (threshold locked; reliability reporting pending) |
+| 4 | Calibrated centralized ECG CNN and MODEL_V1 | Locked threshold; internal and external reports | IMPLEMENTED (external shift documented; robustness pending) |
 | 5 | Backend WFDB/captured-file replay using MODEL_V1 | Offline/stream prediction equivalence | IMPLEMENTED (offline + deterministic stream replay) |
 | 6 | PPG, SpO2, BIDMC, and synchronization | Timestamp-alignment and quality tests | IMPLEMENTED (sync + quality + BIDMC loader contract; archive pending) |
 | 7 | Centralized multimodal model | Required ablations and missing-modality tests | IMPLEMENTED (architecture contract; BIDMC training pending) |
-| 8 | Deterministic federated client partitions | IID/non-IID manifest audits | IMPLEMENTED (partition contract; training pending) |
-| 9 | Actual Flower FedAvg | Toy aggregation and IID convergence comparison | IMPLEMENTED (aggregation baseline; Flower runtime pending) |
+| 8 | Deterministic federated client partitions | IID/non-IID manifest audits | IMPLEMENTED (deferred until centralized/hardware gates) |
+| 9 | Actual Flower FedAvg | Toy aggregation and IID convergence comparison | IMPLEMENTED (deferred until centralized/hardware gates) |
 | 10 | FedProx, QAPFL, and heterogeneity study | Controlled same-budget comparisons | SCAFFOLDED |
 | 11 | Secure aggregation and optional DP | Threat-model and privacy/overhead reports | NOT_STARTED |
 | 12 | Captured, serial, then BLE hardware integration | Replay equivalence and packet-loss tests | SCAFFOLDED |
