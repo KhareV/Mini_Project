@@ -30,7 +30,7 @@ This roadmap is executed by one maintainer. Every phase follows the same loop:
 | 6 | PPG, SpO2, BIDMC, and synchronization | Timestamp-alignment and quality tests | IMPLEMENTED (sync + quality + BIDMC loader contract; archive pending) |
 | 7 | Centralized multimodal model | Required ablations and missing-modality tests | IMPLEMENTED (architecture contract; BIDMC training pending) |
 | 8 | Deterministic federated client partitions | IID/non-IID manifest audits | IMPLEMENTED (partition contract; training pending) |
-| 9 | Actual Flower FedAvg | Toy aggregation and IID convergence comparison | SCAFFOLDED |
+| 9 | Actual Flower FedAvg | Toy aggregation and IID convergence comparison | IMPLEMENTED (aggregation baseline; Flower runtime pending) |
 | 10 | FedProx, QAPFL, and heterogeneity study | Controlled same-budget comparisons | SCAFFOLDED |
 | 11 | Secure aggregation and optional DP | Threat-model and privacy/overhead reports | NOT_STARTED |
 | 12 | Captured, serial, then BLE hardware integration | Replay equivalence and packet-loss tests | SCAFFOLDED |
