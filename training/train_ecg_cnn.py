@@ -40,6 +40,7 @@ from preprocessing.ecg import ECGPreprocessor, NormalizationStats, synthesize_ec
 from preprocessing.quality_ecg import ECGQualityAssessor
 from models.ecg_cnn import ECGCNN1D, ECGCNNConfig, ECGWindowDataset
 from evaluation.metrics import compute_metrics
+from evaluation.calibration import select_f1_threshold
 from training.run_manifest import build_run_manifest, write_manifest
 
 logging.basicConfig(
@@ -256,6 +257,13 @@ def train_cnn(
     test_loss, test_true, test_pred, test_prob = evaluate_epoch(
         best_model, test_loader, criterion, device
     )
+    _, val_true_best, _, val_prob_best = evaluate_epoch(
+        best_model, val_loader, criterion, device
+    )
+    decision_threshold, validation_f1 = select_f1_threshold(
+        val_true_best, val_prob_best
+    )
+    test_pred = (test_prob >= decision_threshold).astype(int)
     test_metrics = compute_metrics(
         test_true, test_pred, test_prob,
         split="test", model_name="ecg_cnn_MODEL_V1", dataset=dataset
@@ -278,6 +286,8 @@ def train_cnn(
             "n_train": len(y_train),
             "n_val": len(y_val),
             "n_test": len(y_test),
+            "decision_threshold": decision_threshold,
+            "validation_f1_at_threshold": validation_f1,
         }, f, indent=2)
 
     with open(exp_dir / "training_log.json", "w") as f:
@@ -287,6 +297,8 @@ def train_cnn(
         json.dump({
             "experiment": "E04_ecg_cnn",
             "best_val_f1": round(best_val_f1, 4),
+            "decision_threshold": round(decision_threshold, 6),
+            "validation_f1_at_threshold": round(validation_f1, 4),
             "test": test_metrics.to_dict(),
         }, f, indent=2)
 
