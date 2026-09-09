@@ -40,6 +40,7 @@ from preprocessing.ecg import ECGPreprocessor, NormalizationStats, synthesize_ec
 from preprocessing.quality_ecg import ECGQualityAssessor
 from models.ecg_cnn import ECGCNN1D, ECGCNNConfig, ECGWindowDataset
 from evaluation.metrics import compute_metrics
+from training.run_manifest import build_run_manifest, write_manifest
 
 logging.basicConfig(
     level=logging.INFO,
@@ -162,7 +163,7 @@ def train_cnn(
     config = ECGCNNConfig(
         input_length=input_length,
         model_version="MODEL_V1",
-        preprocessing_version="1.0.0",
+        preprocessing_version="1.1.0",
     )
     model = ECGCNN1D(config=config).to(device)
     logger.info(f"Model parameters: {model.count_parameters():,}")
@@ -303,48 +304,82 @@ def main():
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--patience", type=int, default=7)
     parser.add_argument("--output-dir", type=str, default="experiments")
+    parser.add_argument("--dataset-version", type=str, default="1.0.3")
+    parser.add_argument("--sampling-rate", type=int, choices=(100, 500), default=500)
+    parser.add_argument("--lead", type=str, default="I")
     args = parser.parse_args()
-
-    preprocessor = ECGPreprocessor()
 
     if args.ptbxl:
         logger.info(f"Loading PTB-XL from {args.ptbxl}...")
         from datasets.ptbxl import PTBXLDataset
-        ds = PTBXLDataset(data_dir=args.ptbxl)
+        ds = PTBXLDataset(data_dir=args.ptbxl, sampling_rate=args.sampling_rate,
+                          target_lead=args.lead, dataset_version=args.dataset_version)
         if not ds.is_available():
             logger.error("PTB-XL not found. Use --synthetic.")
             sys.exit(1)
-        manifest = ds.build_manifest()
-        manifest = ds.generate_splits(manifest, seed=args.seed)
+        manifest_path = Path("data/manifests") / f"ptbxl_{args.dataset_version}_manifest.csv"
+        split_path = Path("data/splits") / f"ptbxl_{args.dataset_version}_splits_seed{args.seed}.csv"
+        manifest = ds.build_manifest(output_path=str(manifest_path))
+        manifest = ds.generate_splits(manifest, seed=args.seed, output_path=str(split_path))
         # Load signals per split
-        all_sigs, all_labels, all_pids = [], [], []
+        all_sigs, all_labels, all_pids, split_names = [], [], [], []
+        records_by_id = {r.record_id: r for r in ds.load_all_records()}
         for _, row in manifest.iterrows():
             try:
-                recs = [r for r in ds.load_all_records()
-                        if r.record_id == row["record_id"]]
-                if not recs:
+                rec = records_by_id.get(row["record_id"])
+                if rec is None:
                     continue
-                sig, fs = ds.load_signal(recs[0])
+                sig, fs = ds.load_signal(rec)
                 all_sigs.append(sig)
                 all_labels.append(int(row["label_int"]))
-                all_pids.append(row["participant_id"])
+                all_pids.append(str(row["participant_id"]))
+                split_names.append(row["split"])
             except Exception as exc:
                 logger.warning(f"Skip: {exc}")
         signals = np.array(all_sigs)
         labels = np.array(all_labels)
         pids = all_pids
-        source_fs = 500
-        dataset_name = "ptbxl"
+        source_fs = args.sampling_rate
+        dataset_name = f"PTBXL_{args.dataset_version}"
     else:
         logger.info("Using SYNTHETIC data (not for reporting results).")
         signals, labels, pids = generate_synthetic_dataset(seed=args.seed)
         source_fs = 250
         dataset_name = "SYNTHETIC"
 
-    splits = patient_level_split_synthetic(pids, labels, seed=args.seed)
+    if args.ptbxl:
+        splits = {name: [i for i, split in enumerate(split_names) if split == name]
+                  for name in ("train", "val", "test")}
+    else:
+        splits = patient_level_split_synthetic(pids, labels, seed=args.seed)
     train_idx = splits["train"]
     val_idx = splits["val"]
     test_idx = splits["test"]
+
+    # Fit normalization on training patients only, then reuse it for all splits.
+    fitter = ECGPreprocessor()
+    normalization_stats = fitter.fit_normalization_stats(
+        list(signals[train_idx]), source_fs
+    )
+    preprocessor = ECGPreprocessor(
+        normalization_stats=normalization_stats,
+        require_normalization_stats=True,
+    )
+    outdir = Path(args.output_dir) / "E04_ecg_cnn"
+    outdir.mkdir(parents=True, exist_ok=True)
+    normalization_stats.save(outdir / "normalization_stats.json")
+    write_manifest(build_run_manifest(
+        experiment_group="phase-4-centralized-ecg-cnn",
+        dataset=dataset_name,
+        seed=args.seed,
+        split_counts={name: len(indices) for name, indices in splits.items()},
+        preprocessing=preprocessor.config_dict,
+        normalization_stats=normalization_stats.to_dict(),
+        synthetic=dataset_name == "SYNTHETIC",
+        project_root=Path(__file__).parent.parent,
+        dataset_details={"source_fs": source_fs, "dataset_version": args.dataset_version if args.ptbxl else None,
+                         "lead": args.lead if args.ptbxl else None, "participant_split": "patient_level"},
+    ), outdir / "run_manifest.json")
 
     logger.info("Preparing CNN windows (preprocessing + windowing)...")
     X_train, y_train = prepare_windows(signals[train_idx], labels[train_idx],
@@ -359,7 +394,7 @@ def main():
 
     train_cnn(
         X_train, y_train, X_val, y_val, X_test, y_test,
-        experiment_dir=f"{args.output_dir}/E04_ecg_cnn",
+        experiment_dir=str(outdir),
         dataset=dataset_name,
         seed=args.seed,
         batch_size=args.batch_size,
