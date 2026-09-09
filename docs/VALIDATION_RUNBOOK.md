@@ -12,7 +12,9 @@ python3 scripts/verify_phases.py
 
 This checks the PTB-XL inventory, real baseline provenance, calibrated CNN evidence, required phase documents, and then runs the full test suite.
 
-Expected result at the current revision: **all checks pass and 134 tests pass** (the count increases as new tests are added).
+Expected result at the current revision: **all checks pass and the full test suite passes** (the count increases as new tests are added).
+
+Calibration primitives are available for evaluation code as `brier_score`, `expected_calibration_error`, and `reliability_bins` in `evaluation.calibration`. They require persisted validation/test probabilities; the existing JSON run artifacts do not retroactively contain per-example probabilities.
 
 ## 2. Focused phase checks
 
