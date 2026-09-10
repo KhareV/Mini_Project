@@ -140,6 +140,7 @@ def train_cnn(
     weight_decay: float = 1e-4,
     augment_noise_std: float = 0.02,
     evaluate_test: bool = True,
+    robust_augment: bool = False,
 ):
     """Full CNN training loop with early stopping and checkpointing."""
     torch.manual_seed(seed)
@@ -180,7 +181,7 @@ def train_cnn(
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     # Datasets
-    train_ds = ECGWindowDataset(X_train, y_train, augment=augment_noise_std > 0, augment_noise_std=augment_noise_std)
+    train_ds = ECGWindowDataset(X_train, y_train, augment=augment_noise_std > 0, augment_noise_std=augment_noise_std, robust_augment=robust_augment)
     val_ds = ECGWindowDataset(X_val, y_val, augment=False)
 
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
@@ -258,7 +259,7 @@ def train_cnn(
     # Test evaluation is deliberately disabled during model selection.
     if not evaluate_test:
         with open(exp_dir / "config.json", "w") as f:
-            json.dump({"experiment": exp_dir.name, "model_config": config.to_dict(), "training": {"seed": seed, "batch_size": batch_size, "max_epochs": max_epochs, "lr": lr, "weight_decay": weight_decay, "augment_noise_std": augment_noise_std, "patience": patience, "training_time_s": round(total_time, 1), "epochs_run": epoch}, "dataset": dataset, "n_train": len(y_train), "n_val": len(y_val), "test_accessed": False}, f, indent=2)
+            json.dump({"experiment": exp_dir.name, "model_config": config.to_dict(), "training": {"seed": seed, "batch_size": batch_size, "max_epochs": max_epochs, "lr": lr, "weight_decay": weight_decay, "augment_noise_std": augment_noise_std, "robust_augment": robust_augment, "patience": patience, "training_time_s": round(total_time, 1), "epochs_run": epoch}, "dataset": dataset, "n_train": len(y_train), "n_val": len(y_val), "test_accessed": False}, f, indent=2)
         with open(exp_dir / "training_log.json", "w") as f:
             json.dump(training_log, f, indent=2)
         return {"best_val_f1": best_val_f1, "best_checkpoint": str(exp_dir / "best_checkpoint.pt"), "config": config.to_dict()}

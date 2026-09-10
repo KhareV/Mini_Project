@@ -251,6 +251,7 @@ class ECGWindowDataset(torch.utils.data.Dataset):
         labels: np.ndarray,
         augment: bool = False,
         augment_noise_std: float = 0.02,
+        robust_augment: bool = False,
     ):
         assert len(signals) == len(labels), \
             f"signals ({len(signals)}) and labels ({len(labels)}) must match"
@@ -258,6 +259,7 @@ class ECGWindowDataset(torch.utils.data.Dataset):
         self.labels = labels.astype(np.int64)
         self.augment = augment
         self.augment_noise_std = augment_noise_std
+        self.robust_augment = robust_augment
 
     def __len__(self) -> int:
         return len(self.signals)
@@ -266,8 +268,19 @@ class ECGWindowDataset(torch.utils.data.Dataset):
         sig = self.signals[idx].copy()
 
         if self.augment:
-            # Light Gaussian noise augmentation only
+            # Training-only synthetic augmentation.  It does not load or reuse
+            # any MIT-BIH/NSTDB external or robustness evaluation sample.
             sig += np.random.normal(0, self.augment_noise_std, sig.shape)
+            if self.robust_augment:
+                t = np.arange(len(sig), dtype=np.float32) / 250.0
+                scale = np.random.uniform(0.85, 1.15)
+                wander_amp = np.random.uniform(0.0, 0.15)
+                wander_hz = np.random.uniform(0.05, 0.4)
+                sig = scale * sig + wander_amp * np.sin(2 * np.pi * wander_hz * t + np.random.uniform(0, 2 * np.pi))
+                # Short dropouts emulate acquisition loss but preserve the label.
+                if np.random.random() < 0.30:
+                    start = np.random.randint(0, max(1, len(sig) - 125))
+                    sig[start:start + np.random.randint(25, 125)] = 0.0
             sig = sig.astype(np.float32)
 
         # Shape: (1, n_samples) — single channel

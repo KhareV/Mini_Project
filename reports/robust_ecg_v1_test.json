@@ -1,0 +1,28 @@
+{
+  "selection": "validation F1 only; test evaluated once after C1/C2/C3 registry closed",
+  "checkpoint": "experiments/robust_ecg_v1/best_checkpoint.pt",
+  "sha256": "13163bff9d237cc71fcbca36448641c816c5d60a0fefdafe7f36939bd97ae9a8",
+  "metrics": {
+    "accuracy": 0.8218,
+    "precision": 0.8721,
+    "recall": 0.8006,
+    "f1": 0.8348,
+    "specificity": 0.8491,
+    "false_positive_rate": 0.1509,
+    "auroc": 0.9,
+    "auprc": 0.932,
+    "tp": 1445,
+    "tn": 1193,
+    "fp": 212,
+    "fn": 360,
+    "n_total": 3210,
+    "n_normal": 1405,
+    "n_abnormal": 1805,
+    "split": "test",
+    "model_name": "CENTRAL_ECG_MODEL_V1",
+    "dataset": "PTB-XL",
+    "notes": ""
+  },
+  "n_test": 3210,
+  "source_epoch": 11
+}
