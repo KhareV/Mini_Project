@@ -6,8 +6,8 @@ This is the pre-federation, pre-hardware centralized release. Person 3 federatio
 
 | Role | Single authoritative artifact | SHA-256 |
 | --- | --- | --- |
-| Primary centralized ECG reference | `models/MODEL_V1.pt` | `2646ca77828200011996fe17137829e168c19e4bc5182fc1d1b2778ae4b01475` |
-| Secondary quality-aware multimodal model | `continuous-health-monitor/experiments/results/multimodal_p1_integrated/checkpoint.pt` | `b3023c323bcde90b305ba23053cea7fd5334844e571e1eb204aac7ebe60bbb42` |
+| Standalone ECG reference | `models/MODEL_V1.pt` | `2646ca77828200011996fe17137829e168c19e4bc5182fc1d1b2778ae4b01475` |
+| Final centralized multimodal classifier | `continuous-health-monitor/experiments/results/multimodal_p1_integrated/checkpoint.pt` | `b3023c323bcde90b305ba23053cea7fd5334844e571e1eb204aac7ebe60bbb42` |
 | Fusion calibration | `continuous-health-monitor/experiments/results/multimodal_p1_integrated/calibration.json` | `13281944d1aed3cfa211175cf57ec4246a87641e69d5c1edd03b09e45910c2a9` |
 
 `models/candidates/C1_validation_selected_nonrelease.pt` is a **non-release optimization candidate**. It must not be used by serving, fusion, Person 3, or any release claim. Its validation-only selection experiment is retained at `experiments/ecg_model_selection/` for auditability.
@@ -18,7 +18,9 @@ This is the pre-federation, pre-hardware centralized release. Person 3 federatio
 - Canonical ECG, MIT-BIH external evaluation: F1 0.4630, AUROC 0.7204. See `reports/canonical_ecg_mitbih_external.json`.
 - Production quality-aware fusion, held-out BIDMC: F1 0.7770, AUROC 0.8482. The ablation-only quality-aware full-fusion result is F1 0.7981; it is evidence, not the serving checkpoint.
 
-ECG-only is the **primary centralized reference for future FL**. Fusion remains a secondary centralized service model and is not represented as outperforming ECG-only.
+`MODEL_V1.pt` is the standalone ECG reference; the quality-aware fusion checkpoint is the final centralized full-input classifier. Their reported scores are from different datasets and task distributions (PTB-XL versus BIDMC), so they must **not** be used to claim that either architecture outperforms the other.
+
+The Person 3 handoff is deliberately two-track: federate the ECG reference as a controlled baseline and federate the approved quality-aware fusion architecture as the multimodal research target. This enables a valid within-track centralized-versus-federated comparison and the planned ECG-versus-multimodal FL study. The exact parameter and evaluation contract is in `MODEL_CONTRACT.md`.
 
 ## Locked software contract
 

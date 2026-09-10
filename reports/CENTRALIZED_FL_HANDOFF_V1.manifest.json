@@ -1,0 +1,24 @@
+{
+  "release": "CENTRALIZED_FL_HANDOFF_V1",
+  "scope": "Frozen P1 + P2 centralized artifacts prepared for Person 3 federation; hardware excluded",
+  "decision": "two_track_federation",
+  "tracks": {
+    "ecg_reference": {
+      "checkpoint": "models/MODEL_V1.pt",
+      "sha256": "2646ca77828200011996fe17137829e168c19e4bc5182fc1d1b2778ae4b01475",
+      "federated_parameters": "all ECGCNN1D trainable parameters",
+      "evaluation": ["PTB-XL held-out test", "MIT-BIH external", "NSTDB stress"]
+    },
+    "quality_aware_multimodal": {
+      "checkpoint": "continuous-health-monitor/experiments/results/multimodal_p1_integrated/checkpoint.pt",
+      "sha256": "b3023c323bcde90b305ba23053cea7fd5334844e571e1eb204aac7ebe60bbb42",
+      "frozen_parameters": "embedded P1 ECG backbone",
+      "federated_parameters": ["PPG encoder", "ECG projection", "tabular encoder", "fusion head"],
+      "calibration": "continuous-health-monitor/experiments/results/multimodal_p1_integrated/calibration.json",
+      "threshold": 0.28,
+      "quality_gate": "quality < 0.50 => UNRELIABLE_SIGNAL",
+      "evaluation": ["BIDMC patient-held-out test"]
+    }
+  },
+  "comparison_rule": "Compare centralized and federated performance within each track. Do not compare PTB-XL ECG and BIDMC multimodal absolute scores as an architecture ranking."
+}
