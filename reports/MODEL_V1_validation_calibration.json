@@ -2,16 +2,16 @@
   "checkpoint": "models/MODEL_V1.pt",
   "fit_split": "PTB-XL validation only",
   "seed": 42,
-  "method": "Platt logistic regression on raw abnormal probability",
-  "coefficient": 5.896136968690101,
-  "intercept": -2.7409283504652935,
-  "locked_threshold": 0.36000000000000004,
+  "method": "Platt logistic regression on clipped-logit abnormal probability",
+  "coefficient": 1.0274336781692934,
+  "intercept": 0.025612038926871125,
+  "locked_threshold": 0.37,
   "validation": {
     "n": 3176,
-    "f1": 0.8431,
+    "f1": 0.8428,
     "auroc": 0.8994,
-    "brier": 0.125356,
-    "ece_10": 0.024701
+    "brier": 0.124663,
+    "ece_10": 0.011259
   },
   "test_accessed_for_selection": false
 }

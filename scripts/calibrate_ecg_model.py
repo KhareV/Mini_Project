@@ -45,6 +45,11 @@ def ece(y, p, bins=10):
     return float(total)
 
 
+def logit(probabilities):
+    clipped = np.clip(probabilities, 1e-6, 1.0 - 1e-6)
+    return np.log(clipped / (1.0 - clipped))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", default="models/MODEL_V1.pt")
@@ -72,15 +77,15 @@ def main():
     model, _ = ECGCNN1D.load_checkpoint(ROOT / args.checkpoint, "cpu")
     raw_val = predict(model, X_val)
     platt = LogisticRegression(random_state=args.seed, solver="lbfgs")
-    platt.fit(raw_val.reshape(-1, 1), y_val)
-    val_prob = platt.predict_proba(raw_val.reshape(-1, 1))[:, 1]
+    platt.fit(logit(raw_val).reshape(-1, 1), y_val)
+    val_prob = platt.predict_proba(logit(raw_val).reshape(-1, 1))[:, 1]
     thresholds = np.linspace(0.01, 0.99, 99)
     threshold = float(max(thresholds, key=lambda t: f1_score(y_val, val_prob >= t)))
     calibration = {
         "checkpoint": args.checkpoint,
         "fit_split": "PTB-XL validation only",
         "seed": args.seed,
-        "method": "Platt logistic regression on raw abnormal probability",
+        "method": "Platt logistic regression on clipped-logit abnormal probability",
         "coefficient": float(platt.coef_[0, 0]),
         "intercept": float(platt.intercept_[0]),
         "locked_threshold": threshold,
@@ -105,7 +110,7 @@ def main():
     test_keep = ~np.isin(test_ids, excluded["test"])
     X_test, y_test = X_test[test_keep], y_test[test_keep]
     raw_test = predict(model, X_test)
-    test_prob = platt.predict_proba(raw_test.reshape(-1, 1))[:, 1]
+    test_prob = platt.predict_proba(logit(raw_test).reshape(-1, 1))[:, 1]
     metrics = compute_metrics(y_test, test_prob >= threshold, test_prob, split="test", model_name="CENTRAL_ECG_MODEL_V1", dataset="PTB-XL", notes="Validation-only Platt calibration and locked threshold.").to_dict()
     payload = {"calibration": args.output, "metrics": metrics, "n_test": int(len(y_test)), "test_used_after_lock": True}
     (ROOT / args.test_output).write_text(json.dumps(payload, indent=2) + "\n")
