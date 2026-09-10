@@ -1,7 +1,9 @@
 # CENTRAL_HOSTED_SYSTEM_V1
 
-The production software baseline is one centrally hosted, quality-aware
-multimodal classifier—not separate ECG, PPG, HR, and SpO2 diagnosis models.
+The deployed, evidence-backed software baseline is the canonical ECG model.
+The quality-aware multimodal endpoint remains an integration/research service,
+not a clinically validated classifier: BIDMC's original target was circular,
+and the corrected future-alert experiment did not generalize.
 
 ## API boundary
 
@@ -13,7 +15,7 @@ multimodal classifier—not separate ECG, PPG, HR, and SpO2 diagnosis models.
 
 The endpoint validates schema/lengths, applies the quality gate, extracts
 features, runs the locked fusion checkpoint, applies its validation-only
-calibration and threshold, and returns an auditable research decision.
+calibration and threshold, and returns an auditable **research** decision.
 `POST /model/stream/{session_id}` adds ordered-window event handling and
 persists decisions. `GET /model/status` exposes artifact readiness.
 
@@ -24,3 +26,11 @@ AD8232 or MAX30102 payloads yet: wearable sampling, calibration, and
 validation remain hardware-phase work. Future hardware ingestion must convert
 raw signals through the same canonical preprocessing contracts before calling
 this API.
+
+## Release eligibility
+
+`MODEL_V1.pt` is the only current deployment-eligible predictive model. The
+multimodal checkpoint may be used to verify data flow, API behaviour, quality
+gating, and later hardware integration, but must not be described as a
+validated abnormality detector until a non-circular labelled multimodal task
+passes held-out and external validation.

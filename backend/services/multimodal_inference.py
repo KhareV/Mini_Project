@@ -28,6 +28,8 @@ class MultimodalInferenceService:
         return {
             "ready": CHECKPOINT.exists() and P1_CHECKPOINT.exists() and CALIBRATION.exists(),
             "model_version": "MODEL_V1 + multimodal_p1_integrated",
+            "deployment_eligible": False,
+            "status_note": "Research integration endpoint only. MODEL_V1 ECG is the validated predictive baseline; the BIDMC multimodal task is not deployment-validated.",
             "checkpoint": str(CHECKPOINT.relative_to(ROOT)),
             "input_contract": "canonical Person 1 ECG (2500 samples at 250 Hz) plus preprocessed PPG (1250 samples at 125 Hz)",
         }
