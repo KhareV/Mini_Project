@@ -9,6 +9,8 @@ Person 3 receives two explicit, frozen experiment targets. No raw data, calibrat
 - Input: `float32`, shape `[batch, 1, 2500]`; one canonically preprocessed ECG lead at 250 Hz.
 - Output: shape `[batch, 2]`, logits ordered `[NORMAL, ABNORMAL]`.
 - Label mapping: `0 = NORMAL`, `1 = ABNORMAL`.
+- Operating point: apply the validation-only Platt calibration in `reports/MODEL_V1_validation_calibration.json`, then the locked threshold `0.36`. The checkpoint itself is unchanged.
+- Exclude the duplicate test records enumerated in `reports/PTBXL_CROSS_SPLIT_DUPLICATE_AUDIT.json` from PTB-XL validation/test reporting. Never fit calibration or select a threshold on those reports.
 - Loss/default centralized optimizer: weighted cross-entropy; AdamW/Adam compatible, but FL experiments must record their exact optimizer and scheduler.
 - Evaluation: `scripts/evaluate_selected_ecg.py` for PTB-XL and `scripts/evaluate_mitbih_external.py` for external-only reporting.
 - Preprocessing: `preprocessing.ecg.ECGPreprocessor`, version 1.0.0; no fitting on validation, test, or client evaluation data.

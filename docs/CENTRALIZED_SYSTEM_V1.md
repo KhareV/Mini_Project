@@ -14,7 +14,8 @@ This is the pre-federation, pre-hardware centralized release. Person 3 federatio
 
 ## Results and decision
 
-- Canonical ECG, fresh direct PTB-XL test evaluation: F1 0.8202, AUROC 0.9012. See `reports/canonical_ecg_test.json`.
+- Historical ECG evaluation at the conventional 0.50 cutoff: F1 0.8202, AUROC 0.9012. See `reports/canonical_ecg_test.json`.
+- Validated ECG operating point: validation-only Platt calibration and locked 0.36 threshold, F1 0.8390, AUROC 0.9010 on 3,207 duplicate-cleaned PTB-XL test records. See `reports/MODEL_V1_validation_calibration.json`, `reports/canonical_ecg_calibrated_test.json`, and `reports/PTBXL_CROSS_SPLIT_DUPLICATE_AUDIT.json`.
 - Canonical ECG, MIT-BIH external evaluation: F1 0.4630, AUROC 0.7204. See `reports/canonical_ecg_mitbih_external.json`.
 - Production quality-aware fusion, held-out BIDMC: F1 0.7770, AUROC 0.8482. The ablation-only quality-aware full-fusion result is F1 0.7981; it is evidence, not the serving checkpoint.
 
@@ -34,6 +35,14 @@ The Person 3 handoff is deliberately two-track: federate the ECG reference as a 
 ## Honest robustness interpretation
 
 The NST/MIT-BIH stress report demonstrates substantial failure under degraded ECG. At +24 dB, specificity is 42.25%; at -6 dB, specificity is 0.18%. Quality gating prevents low-quality input from being presented as a valid prediction; it does **not** establish robust physiological classification under severe motion/noise. Latency reported by the API is CPU-server process latency, not wearable/edge latency.
+
+## Model-validity gate
+
+`reports/MODEL_VALIDITY_CHECK_V1.json` records passed patient-disjointness,
+record uniqueness, tiny-set overfit, shuffled-label, and MIT-BIH label-mapping
+checks. The full audit found eight exact waveform duplicate groups crossing
+PTB-XL partitions. No duplicate evaluation record is used for validation
+calibration or final test reporting; the audit preserves the complete list.
 
 ## Evidence and repeatable commands
 

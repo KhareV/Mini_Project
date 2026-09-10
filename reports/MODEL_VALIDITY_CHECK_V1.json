@@ -1,0 +1,63 @@
+{
+  "seed": 42,
+  "patient_split": {
+    "counts": {
+      "test": 2796,
+      "train": 13045,
+      "val": 2796
+    },
+    "pairwise_overlaps": {
+      "train_val": 0,
+      "train_test": 0,
+      "val_test": 0
+    },
+    "duplicate_record_ids": 0
+  },
+  "window_duplicate_check": {
+    "raw_cached_train_validation_exact_duplicates": 5,
+    "full_dataset_cross_partition_duplicate_groups": 8,
+    "evaluation_exclusions": {
+      "train": [],
+      "val": [
+        "records500/02000/02509_hr",
+        "records500/00000/00458_hr",
+        "records500/09000/09823_hr",
+        "records500/02000/02511_hr",
+        "records500/09000/09889_hr"
+      ],
+      "test": [
+        "records500/01000/01370_hr",
+        "records500/13000/13803_hr",
+        "records500/11000/11817_hr"
+      ]
+    },
+    "status": "raw duplicates detected; all duplicate validation/test records are excluded by the locked calibration/evaluation protocol"
+  },
+  "preprocessing": {
+    "version": "1.0.0",
+    "normalization": "per-window deterministic z-score; no statistics are fitted across train/validation/test partitions",
+    "normalization_stats_supplied": false
+  },
+  "training_sanity": {
+    "tiny_dataset_n": 64,
+    "tiny_dataset_train_accuracy": 1.0,
+    "shuffled_label_train_accuracy": 1.0,
+    "shuffled_label_validation_auroc_n512": 0.5804
+  },
+  "mitbih_label_mapping": {
+    "mapped_beats": 102433,
+    "excluded_beats": 10214,
+    "window_count": 16559,
+    "normal_windows": 12541,
+    "abnormal_windows": 4018,
+    "rule": "window is ABNORMAL only when abnormal beats outnumber normal beats; ties are NORMAL"
+  },
+  "gates": {
+    "patient_leakage": true,
+    "record_duplicate": true,
+    "cross_partition_duplicates_excluded": true,
+    "tiny_overfit": true,
+    "shuffled_label_heldout_not_predictive": true
+  },
+  "all_gates_pass": true
+}

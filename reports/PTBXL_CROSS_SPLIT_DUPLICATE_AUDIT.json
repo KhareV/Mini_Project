@@ -1,0 +1,184 @@
+{
+  "method": "SHA-256 of canonical deterministic 2,500-sample float32 ECG window",
+  "records_processed": 21430,
+  "failures": [],
+  "duplicate_group_count": 32,
+  "cross_split_duplicate_group_count": 8,
+  "cross_split_groups": [
+    [
+      {
+        "record_id": "records500/00000/00140_hr",
+        "patient_id": "13451",
+        "split": "train",
+        "label": 1
+      },
+      {
+        "record_id": "records500/01000/01370_hr",
+        "patient_id": "13446",
+        "split": "test",
+        "label": 1
+      }
+    ],
+    [
+      {
+        "record_id": "records500/00000/00141_hr",
+        "patient_id": "16722",
+        "split": "train",
+        "label": 1
+      },
+      {
+        "record_id": "records500/02000/02509_hr",
+        "patient_id": "16689",
+        "split": "val",
+        "label": 1
+      }
+    ],
+    [
+      {
+        "record_id": "records500/00000/00142_hr",
+        "patient_id": "8159",
+        "split": "train",
+        "label": 1
+      },
+      {
+        "record_id": "records500/13000/13803_hr",
+        "patient_id": "8122",
+        "split": "test",
+        "label": 1
+      }
+    ],
+    [
+      {
+        "record_id": "records500/00000/00146_hr",
+        "patient_id": "13447",
+        "split": "train",
+        "label": 1
+      },
+      {
+        "record_id": "records500/11000/11817_hr",
+        "patient_id": "13452",
+        "split": "test",
+        "label": 1
+      }
+    ],
+    [
+      {
+        "record_id": "records500/00000/00458_hr",
+        "patient_id": "19497",
+        "split": "val",
+        "label": 1
+      },
+      {
+        "record_id": "records500/03000/03797_hr",
+        "patient_id": "19499",
+        "split": "train",
+        "label": 1
+      }
+    ],
+    [
+      {
+        "record_id": "records500/00000/00461_hr",
+        "patient_id": "16942",
+        "split": "train",
+        "label": 1
+      },
+      {
+        "record_id": "records500/09000/09823_hr",
+        "patient_id": "16921",
+        "split": "val",
+        "label": 1
+      }
+    ],
+    [
+      {
+        "record_id": "records500/02000/02511_hr",
+        "patient_id": "12908",
+        "split": "val",
+        "label": 0
+      },
+      {
+        "record_id": "records500/07000/07784_hr",
+        "patient_id": "12906",
+        "split": "train",
+        "label": 0
+      }
+    ],
+    [
+      {
+        "record_id": "records500/09000/09888_hr",
+        "patient_id": "15503",
+        "split": "train",
+        "label": 1
+      },
+      {
+        "record_id": "records500/09000/09889_hr",
+        "patient_id": "8026",
+        "split": "val",
+        "label": 1
+      }
+    ]
+  ],
+  "exclusion_policy": "retain train, then validation, then test; exclude duplicate evaluation records",
+  "excluded_record_ids": {
+    "train": [
+      "records500/00000/00138_hr",
+      "records500/07000/07781_hr",
+      "records500/00000/00463_hr",
+      "records500/00000/00460_hr",
+      "records500/13000/13802_hr",
+      "records500/13000/13796_hr",
+      "records500/02000/02507_hr",
+      "records500/03000/03801_hr",
+      "records500/03000/03802_hr",
+      "records500/09000/09824_hr",
+      "records500/07000/07780_hr",
+      "records500/09000/09822_hr",
+      "records500/15000/15742_hr",
+      "records500/15000/15741_hr",
+      "records500/11000/11815_hr",
+      "records500/11000/11816_hr",
+      "records500/13000/13792_hr",
+      "records500/13000/13798_hr",
+      "records500/13000/13800_hr"
+    ],
+    "val": [
+      "records500/02000/02509_hr",
+      "records500/00000/00458_hr",
+      "records500/09000/09823_hr",
+      "records500/02000/02511_hr",
+      "records500/03000/03796_hr",
+      "records500/03000/03799_hr",
+      "records500/09000/09889_hr",
+      "records500/13000/13794_hr"
+    ],
+    "test": [
+      "records500/01000/01370_hr",
+      "records500/13000/13803_hr",
+      "records500/11000/11817_hr",
+      "records500/00000/00457_hr",
+      "records500/07000/07778_hr",
+      "records500/11000/11813_hr",
+      "records500/18000/18151_hr"
+    ]
+  },
+  "excluded_counts": {
+    "train": 19,
+    "val": 8,
+    "test": 7
+  },
+  "cross_split_excluded_record_ids": {
+    "train": [],
+    "val": [
+      "records500/02000/02509_hr",
+      "records500/00000/00458_hr",
+      "records500/09000/09823_hr",
+      "records500/02000/02511_hr",
+      "records500/09000/09889_hr"
+    ],
+    "test": [
+      "records500/01000/01370_hr",
+      "records500/13000/13803_hr",
+      "records500/11000/11817_hr"
+    ]
+  }
+}

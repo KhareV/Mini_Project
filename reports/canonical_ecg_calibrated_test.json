@@ -1,0 +1,26 @@
+{
+  "calibration": "reports/MODEL_V1_validation_calibration.json",
+  "metrics": {
+    "accuracy": 0.8126,
+    "precision": 0.811,
+    "recall": 0.869,
+    "f1": 0.839,
+    "specificity": 0.7402,
+    "false_positive_rate": 0.2598,
+    "auroc": 0.901,
+    "auprc": 0.9319,
+    "tp": 1566,
+    "tn": 1040,
+    "fp": 365,
+    "fn": 236,
+    "n_total": 3207,
+    "n_normal": 1405,
+    "n_abnormal": 1802,
+    "split": "test",
+    "model_name": "CENTRAL_ECG_MODEL_V1",
+    "dataset": "PTB-XL",
+    "notes": "Validation-only Platt calibration and locked threshold."
+  },
+  "n_test": 3207,
+  "test_used_after_lock": true
+}
