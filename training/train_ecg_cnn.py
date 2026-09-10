@@ -136,6 +136,10 @@ def train_cnn(
     lr: float = 0.001,
     patience: int = 7,
     device: str = "auto",
+    model_config: ECGCNNConfig = None,
+    weight_decay: float = 1e-4,
+    augment_noise_std: float = 0.02,
+    evaluate_test: bool = True,
 ):
     """Full CNN training loop with early stopping and checkpointing."""
     torch.manual_seed(seed)
@@ -159,31 +163,35 @@ def train_cnn(
 
     # Config
     input_length = X_train.shape[1] if X_train.ndim > 1 else 2500
-    config = ECGCNNConfig(
+    config = model_config or ECGCNNConfig(
         input_length=input_length,
         model_version="MODEL_V1",
         preprocessing_version="1.0.0",
     )
+    if config.input_length != input_length:
+        raise ValueError(f"model config input_length={config.input_length} does not match data={input_length}")
     model = ECGCNN1D(config=config).to(device)
     logger.info(f"Model parameters: {model.count_parameters():,}")
 
-    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
+    optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=max_epochs
     )
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     # Datasets
-    train_ds = ECGWindowDataset(X_train, y_train, augment=True)
+    train_ds = ECGWindowDataset(X_train, y_train, augment=augment_noise_std > 0, augment_noise_std=augment_noise_std)
     val_ds = ECGWindowDataset(X_val, y_val, augment=False)
-    test_ds = ECGWindowDataset(X_test, y_test, augment=False)
 
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
                               num_workers=0, pin_memory=(device == "cuda"))
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False,
                             num_workers=0)
-    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False,
-                             num_workers=0)
+    test_loader = None
+    if evaluate_test:
+        test_ds = ECGWindowDataset(X_test, y_test, augment=False)
+        test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False,
+                                 num_workers=0)
 
     # Training loop
     best_val_f1 = -1.0
@@ -246,6 +254,14 @@ def train_cnn(
 
     total_time = time.time() - t_start
     logger.info(f"Training complete in {total_time:.1f}s")
+
+    # Test evaluation is deliberately disabled during model selection.
+    if not evaluate_test:
+        with open(exp_dir / "config.json", "w") as f:
+            json.dump({"experiment": exp_dir.name, "model_config": config.to_dict(), "training": {"seed": seed, "batch_size": batch_size, "max_epochs": max_epochs, "lr": lr, "weight_decay": weight_decay, "augment_noise_std": augment_noise_std, "patience": patience, "training_time_s": round(total_time, 1), "epochs_run": epoch}, "dataset": dataset, "n_train": len(y_train), "n_val": len(y_val), "test_accessed": False}, f, indent=2)
+        with open(exp_dir / "training_log.json", "w") as f:
+            json.dump(training_log, f, indent=2)
+        return {"best_val_f1": best_val_f1, "best_checkpoint": str(exp_dir / "best_checkpoint.pt"), "config": config.to_dict()}
 
     # ── Final Evaluation on test set ─────────────────────────────────────────
     # Load best model for test evaluation
@@ -316,15 +332,15 @@ def main():
             sys.exit(1)
         manifest = ds.build_manifest()
         manifest = ds.generate_splits(manifest, seed=args.seed)
+        records_by_id = {record.record_id: record for record in ds.load_all_records() if record.is_valid}
         # Load signals per split
         all_sigs, all_labels, all_pids = [], [], []
         for _, row in manifest.iterrows():
             try:
-                recs = [r for r in ds.load_all_records()
-                        if r.record_id == row["record_id"]]
-                if not recs:
+                record = records_by_id.get(row["record_id"])
+                if record is None:
                     continue
-                sig, fs = ds.load_signal(recs[0])
+                sig, fs = ds.load_signal(record)
                 all_sigs.append(sig)
                 all_labels.append(int(row["label_int"]))
                 all_pids.append(row["participant_id"])

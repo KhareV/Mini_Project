@@ -1,0 +1,14 @@
+{
+  "source": "BIDMC held-out test split",
+  "windows_replayed": 100,
+  "decision_counts": {
+    "NORMAL_MONITORED_PATTERN": 98,
+    "POTENTIALLY_ABNORMAL_PATTERN": 2
+  },
+  "event_transitions": {
+    "EVENT_OPENED": 1,
+    "EVENT_CLEARED": 1
+  },
+  "software_only": true,
+  "hardware_integration": false
+}

@@ -1,0 +1,28 @@
+{
+  "selection": "validation F1 only; test evaluated once after C1/C2/C3 registry closed",
+  "checkpoint": "models/candidates/C1_validation_selected_nonrelease.pt",
+  "sha256": "682868677626acedc66f11eed75a6799da647968bd7fdef4a032d0e544cbc705",
+  "metrics": {
+    "accuracy": 0.8109,
+    "precision": 0.8358,
+    "recall": 0.826,
+    "f1": 0.8309,
+    "specificity": 0.7915,
+    "false_positive_rate": 0.2085,
+    "auroc": 0.8976,
+    "auprc": 0.9302,
+    "tp": 1491,
+    "tn": 1112,
+    "fp": 293,
+    "fn": 314,
+    "n_total": 3210,
+    "n_normal": 1405,
+    "n_abnormal": 1805,
+    "split": "test",
+    "model_name": "CENTRAL_ECG_MODEL_V1",
+    "dataset": "PTB-XL",
+    "notes": ""
+  },
+  "n_test": 3210,
+  "source_epoch": 5
+}

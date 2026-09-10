@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend.api.routes import auth, monitoring, signals, anomaly, baseline, federated, experiments, devices, alerts, reports, system, websocket
+from backend.api.routes import auth, monitoring, signals, anomaly, baseline, federated, experiments, devices, alerts, reports, system, websocket, model
 from backend.db.database import create_all_tables
 import asyncio
 
@@ -20,6 +20,7 @@ app.include_router(alerts.router)
 app.include_router(reports.router)
 app.include_router(system.router)
 app.include_router(websocket.router)
+app.include_router(model.router)
 
 @app.on_event("startup")
 async def startup():

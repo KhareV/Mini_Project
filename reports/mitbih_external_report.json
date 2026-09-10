@@ -1,0 +1,28 @@
+{
+  "metrics": {
+    "accuracy": 0.4377,
+    "precision": 0.3013,
+    "recall": 0.999,
+    "f1": 0.463,
+    "specificity": 0.2579,
+    "false_positive_rate": 0.7421,
+    "auroc": 0.7204,
+    "auprc": 0.3783,
+    "tp": 4014,
+    "tn": 3234,
+    "fp": 9307,
+    "fn": 4,
+    "n_total": 16559,
+    "n_normal": 12541,
+    "n_abnormal": 4018,
+    "split": "external",
+    "model_name": "CENTRAL_ECG_MODEL_V1",
+    "dataset": "mitbih",
+    "notes": "External-only: no MIT-BIH training or tuning."
+  },
+  "n_records": 48,
+  "n_windows": 16559,
+  "failures": [],
+  "threshold": 0.5,
+  "checkpoint": "models/MODEL_V1.pt"
+}

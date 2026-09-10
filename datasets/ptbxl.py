@@ -301,7 +301,11 @@ class PTBXLDataset:
             participant_id=str(int(row.get("patient_id", 0))),
             ecg_id=int(ecg_id),
             sampling_rate=self.sampling_rate,
-            n_samples=int(row.get("recording_date", 0)),  # placeholder; actual from wfdb
+            # PTB-XL's recording_date is an ISO timestamp, not a sample count.
+            # The true number of samples is read from the WFDB header when the
+            # waveform is loaded; using the timestamp here previously rejected
+            # every otherwise valid record.
+            n_samples=0,
             n_leads=12,
             lead_names=self.LEAD_NAMES,
             label_raw=superclass,

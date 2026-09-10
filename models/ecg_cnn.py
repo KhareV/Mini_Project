@@ -154,12 +154,21 @@ class ECGCNN1D(nn.Module):
         -------
         logits : torch.Tensor of shape (batch, n_classes)
         """
+        x = self.extract_features(x)
+        x = self.dropout(x)
+        return self.fc2(x)
+
+    def extract_features(self, x: torch.Tensor) -> torch.Tensor:
+        """Return the deterministic pre-classifier representation (batch, fc_hidden).
+
+        This is the only supported feature handoff for the multimodal adapter.
+        It intentionally excludes dropout and the final classifier so a frozen
+        MODEL_V1 can be reused without treating binary logits as embeddings.
+        """
         x = self.blocks(x)
         x = self.global_pool(x)
         x = self.flatten(x)
-        x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        return self.fc2(x)
+        return F.relu(self.fc1(x))
 
     def predict_proba(self, x: torch.Tensor) -> torch.Tensor:
         """Return softmax probabilities (batch, n_classes)."""

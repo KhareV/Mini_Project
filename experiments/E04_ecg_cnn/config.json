@@ -30,16 +30,16 @@
   },
   "training": {
     "seed": 42,
-    "batch_size": 32,
-    "max_epochs": 15,
+    "batch_size": 64,
+    "max_epochs": 3,
     "lr": 0.001,
-    "patience": 7,
+    "patience": 2,
     "device": "cpu",
-    "training_time_s": 11.3,
-    "epochs_run": 9
+    "training_time_s": 211.6,
+    "epochs_run": 3
   },
-  "dataset": "SYNTHETIC",
-  "n_train": 350,
-  "n_val": 75,
-  "n_test": 75
+  "dataset": "ptbxl",
+  "n_train": 15039,
+  "n_val": 3181,
+  "n_test": 3210
 }

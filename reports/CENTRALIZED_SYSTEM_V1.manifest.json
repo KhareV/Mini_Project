@@ -1,0 +1,11 @@
+{
+  "release": "CENTRALIZED_SYSTEM_V1",
+  "git_base_commit": "ab35277d241d603c92b0cc78c9f0dc4f1bd7d2e9",
+  "git_tag": "CENTRALIZED_SYSTEM_V1",
+  "multimodal_git_tag": "CENTRALIZED_MULTIMODAL_V1",
+  "scope": "P1 + P2 + shared centralized software only; excludes P3 federation and hardware",
+  "primary_model": {"name": "CENTRAL_ECG_MODEL_V1", "path": "models/MODEL_V1.pt", "sha256": "2646ca77828200011996fe17137829e168c19e4bc5182fc1d1b2778ae4b01475"},
+  "secondary_model": {"name": "QUALITY_AWARE_MULTIMODAL_V1", "path": "continuous-health-monitor/experiments/results/multimodal_p1_integrated/checkpoint.pt", "sha256": "b3023c323bcde90b305ba23053cea7fd5334844e571e1eb204aac7ebe60bbb42"},
+  "calibration": {"path": "continuous-health-monitor/experiments/results/multimodal_p1_integrated/calibration.json", "sha256": "13281944d1aed3cfa211175cf57ec4246a87641e69d5c1edd03b09e45910c2a9", "fit_split": "validation_only", "threshold": 0.28},
+  "status": "FROZEN_RELEASE"
+}
