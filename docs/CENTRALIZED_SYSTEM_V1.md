@@ -15,7 +15,7 @@ This is the pre-federation, pre-hardware centralized release. Person 3 federatio
 ## Results and decision
 
 - Historical ECG evaluation at the conventional 0.50 cutoff: F1 0.8202, AUROC 0.9012. See `reports/canonical_ecg_test.json`.
-- Validated ECG operating point: validation-only Platt calibration and locked 0.36 threshold, F1 0.8390, AUROC 0.9010 on 3,207 duplicate-cleaned PTB-XL test records. See `reports/MODEL_V1_validation_calibration.json`, `reports/canonical_ecg_calibrated_test.json`, and `reports/PTBXL_CROSS_SPLIT_DUPLICATE_AUDIT.json`.
+- Validated ECG operating point: validation-only Platt calibration and locked 0.37 threshold, F1 0.8389, AUROC 0.9010 on 3,207 duplicate-cleaned PTB-XL test records. See `reports/MODEL_V1_validation_calibration.json`, `reports/canonical_ecg_calibrated_test.json`, and `reports/PTBXL_CROSS_SPLIT_DUPLICATE_AUDIT.json`.
 - Canonical ECG, MIT-BIH external evaluation: F1 0.4630, AUROC 0.7204. See `reports/canonical_ecg_mitbih_external.json`.
 - Production quality-aware fusion, held-out BIDMC: F1 0.7770, AUROC 0.8482. The ablation-only quality-aware full-fusion result is F1 0.7981; it is evidence, not the serving checkpoint.
 
