@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +7,7 @@ from backend.db.models import ModelPrediction
 from backend.services.multimodal_inference import multimodal_inference_service
 from backend.services.streaming_inference import streaming_inference_service
 from backend.services.ecg_inference import ecg_inference_service
+from backend.services.vitals_inference import vitals_inference_service, centralized_system_inference_service
 
 router = APIRouter(prefix="/model", tags=["multimodal-model"])
 
@@ -29,17 +30,46 @@ class ECGInferenceRequest(BaseModel):
     quality: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
+class VitalsInferenceRequest(BaseModel):
+    ppg: List[float] = Field(..., min_length=1250, max_length=1250)
+    spo2: Optional[float] = Field(default=None, ge=0.0, le=100.0)
+    ppg_quality: float = Field(default=1.0, ge=0.0, le=1.0)
+    spo2_quality: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
+class CentralizedSystemInferenceRequest(VitalsInferenceRequest):
+    ecg: List[float] = Field(..., min_length=2500, max_length=2500)
+    ecg_quality: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
 @router.get("/status")
 def status():
     ecg = ecg_inference_service.status()
     multimodal = multimodal_inference_service.status()
-    return {"ready": ecg["ready"] and multimodal["ready"], "model_version": "MODEL_V1 + multimodal research adapter", "ecg": ecg, "multimodal": multimodal}
+    vitals = vitals_inference_service.status()
+    return {"ready": ecg["ready"] and vitals["ready"], "model_version": "MODEL_V1 + PPG_PULSE_ESTIMATOR_V3", "ecg": ecg, "vitals": vitals, "multimodal": multimodal}
 
 
 @router.post("/ecg/infer")
 def ecg_infer(request: ECGInferenceRequest):
     try:
         return ecg_inference_service.predict(**request.model_dump())
+    except (ValueError, FileNotFoundError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/vitals/infer")
+def vitals_infer(request: VitalsInferenceRequest):
+    try:
+        return vitals_inference_service.predict(**request.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/system/infer")
+def system_infer(request: CentralizedSystemInferenceRequest):
+    try:
+        return centralized_system_inference_service.predict(**request.model_dump())
     except (ValueError, FileNotFoundError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 

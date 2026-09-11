@@ -44,6 +44,8 @@ export const api = {
 	model: {
 		getStatus: () => request('/model/status'),
 		inferEcg: (data: unknown) => json('/model/ecg/infer', 'POST', data),
+		inferVitals: (data: unknown) => json('/model/vitals/infer', 'POST', data),
+		inferSystem: (data: unknown) => json('/model/system/infer', 'POST', data),
 		infer: (data: unknown) => json('/model/infer', 'POST', data),
 		stream: (sessionId: string, windows: unknown[]) => json(`/model/stream/${sessionId}`, 'POST', { windows }),
 		resetStream: (sessionId: string) => json(`/model/stream/${sessionId}/reset`, 'POST', {})

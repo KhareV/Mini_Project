@@ -6,6 +6,11 @@
 
 > ⚠️ **MEDICAL DISCLAIMER**: This software is an engineering research prototype. It is NOT intended for medical diagnosis, treatment, or emergency decision-making. All outputs are research results only.
 
+Current centralized release: [`docs/CENTRALIZED_SYSTEM_V2.md`](docs/CENTRALIZED_SYSTEM_V2.md).
+It serves the locked ECG model, non-circular PPG pulse estimation, measured
+SpO2 validation, and quality-gated integration. The older learned BIDMC fusion
+is retained only as research history after its target-validity audit.
+
 ---
 
 ## Project Overview

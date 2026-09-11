@@ -20,7 +20,7 @@ class ECGInferenceService:
         self.model = None
 
     def status(self) -> Dict[str, object]:
-        return {"ready": CHECKPOINT.exists() and CALIBRATION.exists(), "deployment_eligible": True, "model_version": "MODEL_V1", "input_contract": "canonical float ECG: 2500 samples, 10 seconds at 250 Hz", "checkpoint": str(CHECKPOINT.relative_to(ROOT))}
+        return {"ready": CHECKPOINT.exists() and CALIBRATION.exists(), "deployment_eligible": True, "clinical_use_eligible": False, "model_version": "MODEL_V1", "input_contract": "canonical float ECG: 2500 samples, 10 seconds at 250 Hz", "checkpoint": str(CHECKPOINT.relative_to(ROOT))}
 
     def _load(self):
         if self.model is None:
@@ -38,7 +38,7 @@ class ECGInferenceService:
             raise ValueError("ecg contains non-finite values")
         if not 0.0 <= quality <= 1.0:
             raise ValueError("quality must be between 0 and 1")
-        metadata = {"model_version": "MODEL_V1", "quality": quality, "preprocessing_version": "1.0.0", "deployment_eligible": True, "medical_disclaimer": "Research output only; not a diagnosis."}
+        metadata = {"model_version": "MODEL_V1", "quality": quality, "preprocessing_version": "1.0.0", "deployment_eligible": True, "clinical_use_eligible": False, "medical_disclaimer": "Research output only; not a diagnosis."}
         if quality < 0.5:
             return {"prediction": "UNRELIABLE_SIGNAL", "model_confidence": None, "reason": "ECG quality below locked 0.50 gate", "latency_ms": round((time.perf_counter()-started)*1000, 2), **metadata}
         self._load()

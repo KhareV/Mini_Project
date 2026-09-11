@@ -1,0 +1,40 @@
+{
+  "release": "CENTRALIZED_SYSTEM_V2",
+  "claim": "clinical-validation-ready research software; not clinically eligible",
+  "ecg": {
+    "version": "MODEL_V1",
+    "checkpoint": "models/MODEL_V1.pt",
+    "sha256": "2646ca77828200011996fe17137829e168c19e4bc5182fc1d1b2778ae4b01475",
+    "test": {"n": 3207, "f1": 0.8389, "auroc": 0.9010, "auprc": 0.9319, "sensitivity": 0.8685, "specificity": 0.7409}
+  },
+  "ppg_pulse": {
+    "version": "PPG_PULSE_ESTIMATOR_V3",
+    "implementation_sha256": "1fe8236250439e1fdbd1e00ce1baba3796d1a4e803fc1f601a3032e99c70c59c",
+    "evaluation_sha256": "9c1dc7a810fa6435fd7ee0f050712e5f4b01c7310d62fce8a1d1636ccc20a44d",
+    "test": {"subjects": 7, "windows": 665, "mae_bpm": 2.3464, "mae_subject_bootstrap_95_ci": [1.1534, 3.8173], "within_5_bpm": 0.9038, "pulse_alert_f1": 0.8659, "sensitivity": 0.8712, "specificity": 0.9542},
+    "quality_gated_test": {"coverage": 0.7744, "windows": 515, "mae_bpm": 1.8097, "within_5_bpm": 0.9320, "pulse_alert_f1": 0.8790, "sensitivity": 0.8790, "specificity": 0.9469},
+    "post_test_correction": true,
+    "external_wearable_confirmation_required": true
+  },
+  "spo2": {
+    "strategy": "quality-tagged synchronized device measurement",
+    "learned_model": null,
+    "reason": "BIDMC lacks raw paired red/infrared optical channels for MAX30102 calibration"
+  },
+  "fusion": {
+    "released": "quality-gated conservative OR over independent ECG and vital outputs",
+    "legacy_learned_fusion": "rejected; historical research endpoint only"
+  },
+  "data_integrity": {
+    "bidmc_split_sha256": "bc4e894b8a3284edd2edfb38e54eeade628608e1b3ff9e47fe6b965bbf141de4",
+    "bidmc_test_sha256": "8db640539f68f2bcea3f4b963f5132bc7c5684ff27cbeae5ef078edcee2295f6"
+  },
+  "sample_predictions_sha256": "6cc9af2659100fda8e62bf0444ed1ccbd254273967614b1a73cd035401ff3277",
+  "verification": {
+    "root_python_tests": "129 passed",
+    "person2_python_tests": "42 passed",
+    "frontend_check": "0 errors; 120 pre-existing warnings",
+    "frontend_build": "passed with warnings"
+  },
+  "clinical_use_eligible": false
+}

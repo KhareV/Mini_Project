@@ -1,0 +1,156 @@
+{
+  "release": "CENTRALIZED_SYSTEM_V2",
+  "source": "fixed examples from the patient-held-out BIDMC test partition",
+  "endpoint_equivalent": "POST /model/vitals/infer",
+  "examples": [
+    {
+      "index": 0,
+      "recording_id": "bidmc_11",
+      "subject_id": "s04641",
+      "timestamp_start": 0.0,
+      "reference_pulse_bpm": 92.54545454545455,
+      "reference_spo2_percent": 100.0,
+      "service_output": {
+        "prediction": "NO_VITAL_ALERT",
+        "alerts": [],
+        "pulse": {
+          "pulse_bpm": 95.541,
+          "quality_score": 0.7342,
+          "reliable": true,
+          "beat_count": 17,
+          "ibi_mad_ms": 24.0,
+          "spectral_bpm": 97.504,
+          "agreement_bpm": 1.962,
+          "status": "ok",
+          "external_quality": 0.7578091646082763,
+          "effective_quality": 0.7342,
+          "used": true
+        },
+        "spo2": {
+          "value_percent": 100.0,
+          "quality": 1.0,
+          "used": true,
+          "source": "synchronized_device_measurement"
+        },
+        "model_version": "PPG_PULSE_ESTIMATOR_V3",
+        "clinical_use_eligible": false,
+        "medical_disclaimer": "Research output only; not a diagnosis or a certified pulse oximeter."
+      }
+    },
+    {
+      "index": 300,
+      "recording_id": "bidmc_35",
+      "subject_id": "s20486",
+      "timestamp_start": 75.0,
+      "reference_pulse_bpm": 101.0,
+      "reference_spo2_percent": 96.81818181818181,
+      "service_output": {
+        "prediction": "POTENTIALLY_ABNORMAL_VITALS",
+        "alerts": [
+          "PULSE_OUTSIDE_60_100_BPM"
+        ],
+        "pulse": {
+          "pulse_bpm": 102.041,
+          "quality_score": 0.8365,
+          "reliable": true,
+          "beat_count": 17,
+          "ibi_mad_ms": 12.0,
+          "spectral_bpm": 103.455,
+          "agreement_bpm": 1.414,
+          "status": "ok",
+          "external_quality": 0.8185693104895586,
+          "effective_quality": 0.8185693104895586,
+          "used": true
+        },
+        "spo2": {
+          "value_percent": 96.81818181818181,
+          "quality": 1.0,
+          "used": true,
+          "source": "synchronized_device_measurement"
+        },
+        "model_version": "PPG_PULSE_ESTIMATOR_V3",
+        "clinical_use_eligible": false,
+        "medical_disclaimer": "Research output only; not a diagnosis or a certified pulse oximeter."
+      }
+    },
+    {
+      "index": 500,
+      "recording_id": "bidmc_50",
+      "subject_id": "s31141",
+      "timestamp_start": 125.0,
+      "reference_pulse_bpm": 76.54545454545455,
+      "reference_spo2_percent": 99.0,
+      "service_output": {
+        "prediction": "NO_VITAL_ALERT",
+        "alerts": [],
+        "pulse": {
+          "pulse_bpm": 75.0,
+          "quality_score": 0.9317,
+          "reliable": true,
+          "beat_count": 12,
+          "ibi_mad_ms": 8.0,
+          "spectral_bpm": 75.073,
+          "agreement_bpm": 0.073,
+          "status": "ok",
+          "external_quality": 0.7992909731707472,
+          "effective_quality": 0.7992909731707472,
+          "used": true
+        },
+        "spo2": {
+          "value_percent": 99.0,
+          "quality": 1.0,
+          "used": true,
+          "source": "synchronized_device_measurement"
+        },
+        "model_version": "PPG_PULSE_ESTIMATOR_V3",
+        "clinical_use_eligible": false,
+        "medical_disclaimer": "Research output only; not a diagnosis or a certified pulse oximeter."
+      }
+    }
+  ],
+  "integrated_example": {
+    "prediction": "NORMAL_MONITORED_PATTERN",
+    "reliable_components": 2,
+    "ecg": {
+      "prediction": "NORMAL_MONITORED_PATTERN",
+      "model_confidence": 0.299239821695397,
+      "raw_model_score": 0.29877710342407227,
+      "threshold": 0.37,
+      "model_version": "MODEL_V1",
+      "quality": 1.0,
+      "preprocessing_version": "1.0.0",
+      "deployment_eligible": true,
+      "clinical_use_eligible": false,
+      "medical_disclaimer": "Research output only; not a diagnosis."
+    },
+    "vitals": {
+      "prediction": "NO_VITAL_ALERT",
+      "alerts": [],
+      "pulse": {
+        "pulse_bpm": 95.541,
+        "quality_score": 0.7342,
+        "reliable": true,
+        "beat_count": 17,
+        "ibi_mad_ms": 24.0,
+        "spectral_bpm": 97.504,
+        "agreement_bpm": 1.962,
+        "status": "ok",
+        "external_quality": 0.7578091646082763,
+        "effective_quality": 0.7342,
+        "used": true
+      },
+      "spo2": {
+        "value_percent": 100.0,
+        "quality": 1.0,
+        "used": true,
+        "source": "synchronized_device_measurement"
+      },
+      "model_version": "PPG_PULSE_ESTIMATOR_V3",
+      "clinical_use_eligible": false,
+      "medical_disclaimer": "Research output only; not a diagnosis or a certified pulse oximeter."
+    },
+    "fusion_policy": "quality-gated conservative OR; no circular learned BIDMC classifier",
+    "clinical_use_eligible": false,
+    "medical_disclaimer": "Research output only; not a diagnosis."
+  }
+}

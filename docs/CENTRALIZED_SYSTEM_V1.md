@@ -1,5 +1,8 @@
 # CENTRALIZED_SYSTEM_V1 release record
 
+> Historical release record. `CENTRALIZED_SYSTEM_V2.md` supersedes its learned
+> multimodal handoff after the BIDMC target-leakage audit.
+
 This is the pre-federation, pre-hardware centralized release. Person 3 federation and sensor hardware are not included.
 
 ## Authoritative artifacts
@@ -34,7 +37,10 @@ was rejected; see the P2 `BIDMC_FUTURE_ALERT_V1.md` record.
 
 `MODEL_V1.pt` is the standalone ECG reference; the quality-aware fusion checkpoint is the final centralized full-input classifier. Their reported scores are from different datasets and task distributions (PTB-XL versus BIDMC), so they must **not** be used to claim that either architecture outperforms the other.
 
-The Person 3 handoff is deliberately two-track: federate the ECG reference as a controlled baseline and federate the approved quality-aware fusion architecture as the multimodal research target. This enables a valid within-track centralized-versus-federated comparison and the planned ECG-versus-multimodal FL study. The exact parameter and evaluation contract is in `MODEL_CONTRACT.md`.
+This original two-track handoff is superseded by `CENTRALIZED_SYSTEM_V2.md`:
+federate the ECG reference only. The learned BIDMC fusion checkpoint is audit
+history, not a validated FL target. The current contract is in
+`MODEL_CONTRACT.md`.
 
 ## Locked software contract
 
