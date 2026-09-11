@@ -1,0 +1,29 @@
+{
+  "version": "PTBXL_WINDOWS_V2",
+  "seed": 42,
+  "splits": {
+    "train": {
+      "windows": 15039,
+      "normal": 6504,
+      "abnormal": 8535,
+      "patients": 13045
+    },
+    "val": {
+      "windows": 3176,
+      "normal": 1350,
+      "abnormal": 1826,
+      "patients": 2792
+    },
+    "test": {
+      "windows": 3207,
+      "normal": 1405,
+      "abnormal": 1802,
+      "patients": 2793
+    }
+  },
+  "patient_overlap": {
+    "train_val": 0,
+    "train_test": 0,
+    "val_test": 0
+  }
+}

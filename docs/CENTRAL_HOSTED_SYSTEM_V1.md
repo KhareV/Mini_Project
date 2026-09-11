@@ -7,6 +7,11 @@ and the corrected future-alert experiment did not generalize.
 
 ## API boundary
 
+`POST /model/ecg/infer` is the deployment-eligible software path. It accepts a
+canonical 2,500-sample ECG window plus a normalized quality value, applies the
+locked quality gate, MODEL_V1 checkpoint, validation-only calibration, and
+0.37 threshold, and returns a monitored-pattern decision.
+
 `POST /model/infer` accepts one already canonical 10-second window:
 
 - ECG: 2,500 `float32` samples at 250 Hz, using the P1 pipeline.
@@ -16,7 +21,7 @@ and the corrected future-alert experiment did not generalize.
 The endpoint validates schema/lengths, applies the quality gate, extracts
 features, runs the locked fusion checkpoint, applies its validation-only
 calibration and threshold, and returns an auditable **research** decision.
-`POST /model/stream/{session_id}` adds ordered-window event handling and
+The multimodal route is research-only. `POST /model/stream/{session_id}` adds ordered-window event handling and
 persists decisions. `GET /model/status` exposes artifact readiness.
 
 ## Explicit limitation

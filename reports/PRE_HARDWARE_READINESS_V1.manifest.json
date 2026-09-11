@@ -1,0 +1,15 @@
+{
+  "release": "PRE_HARDWARE_READINESS_V1",
+  "deployment_eligible_model": "models/MODEL_V1.pt",
+  "ecg_metrics": {"f1": 0.8389, "auroc": 0.9010, "auprc": 0.9319, "sensitivity": 0.8685, "specificity": 0.7409, "n": 3207},
+  "seed_stability": {"seeds": [42, 123, 456, 789, 2026], "f1_mean": 0.8225, "f1_std": 0.0033, "auroc_mean": 0.8973, "auroc_std": 0.0049},
+  "best_classical_baseline": {"model": "Random Forest", "f1": 0.8053, "auroc": 0.8650},
+  "backend_tests": {"passed": 122, "failed": 0},
+  "deployment_endpoint": "POST /model/ecg/infer",
+  "stream_replay_windows": 100,
+  "frontend_check": "PASS_WITH_WARNINGS",
+  "frontend_build": "PASS_WITH_WARNINGS",
+  "multimodal_status": "RESEARCH_INTEGRATION_ONLY_NOT_DEPLOYMENT_ELIGIBLE",
+  "hardware_integration": "DEFERRED",
+  "federated_learning": "DEFERRED"
+}

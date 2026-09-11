@@ -19,6 +19,19 @@ This is the pre-federation, pre-hardware centralized release. Person 3 federatio
 - Canonical ECG, MIT-BIH external evaluation: F1 0.4630, AUROC 0.7204. See `reports/canonical_ecg_mitbih_external.json`.
 - Production quality-aware fusion, held-out BIDMC: F1 0.7770, AUROC 0.8482. The ablation-only quality-aware full-fusion result is F1 0.7981; it is evidence, not the serving checkpoint.
 
+Real duplicate-cleaned PTB-XL baselines are now available: majority F1 0.7195
+(specificity 0), Logistic Regression F1 0.7875/AUROC 0.8573, and Random Forest
+F1 0.8053/AUROC 0.8650. Five fixed-seed repetitions of the CNN recipe yielded
+F1 0.8225 ± 0.0033 and AUROC 0.8973 ± 0.0049 at the conventional 0.5 cutoff.
+See `reports/PTBXL_REAL_BASELINES_V2.json` and
+`reports/ECG_SEED_STABILITY_V2.json`.
+
+The BIDMC scores above are retained as historical integration results only.
+Their label was derived from contemporaneous HR/SpO2 values that were also
+model inputs, so they are not eligible evidence for clinical multimodal
+performance. The non-circular future-alert audit also failed to generalize and
+was rejected; see the P2 `BIDMC_FUTURE_ALERT_V1.md` record.
+
 `MODEL_V1.pt` is the standalone ECG reference; the quality-aware fusion checkpoint is the final centralized full-input classifier. Their reported scores are from different datasets and task distributions (PTB-XL versus BIDMC), so they must **not** be used to claim that either architecture outperforms the other.
 
 The Person 3 handoff is deliberately two-track: federate the ECG reference as a controlled baseline and federate the approved quality-aware fusion architecture as the multimodal research target. This enables a valid within-track centralized-versus-federated comparison and the planned ECG-versus-multimodal FL study. The exact parameter and evaluation contract is in `MODEL_CONTRACT.md`.

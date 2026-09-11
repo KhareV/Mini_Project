@@ -6,6 +6,7 @@ from backend.db.database import get_db
 from backend.db.models import ModelPrediction
 from backend.services.multimodal_inference import multimodal_inference_service
 from backend.services.streaming_inference import streaming_inference_service
+from backend.services.ecg_inference import ecg_inference_service
 
 router = APIRouter(prefix="/model", tags=["multimodal-model"])
 
@@ -23,9 +24,24 @@ class StreamInferenceRequest(BaseModel):
     windows: List[MultimodalInferenceRequest] = Field(..., min_length=1, max_length=20)
 
 
+class ECGInferenceRequest(BaseModel):
+    ecg: List[float] = Field(..., min_length=2500, max_length=2500)
+    quality: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
 @router.get("/status")
 def status():
-    return multimodal_inference_service.status()
+    ecg = ecg_inference_service.status()
+    multimodal = multimodal_inference_service.status()
+    return {"ready": ecg["ready"] and multimodal["ready"], "model_version": "MODEL_V1 + multimodal research adapter", "ecg": ecg, "multimodal": multimodal}
+
+
+@router.post("/ecg/infer")
+def ecg_infer(request: ECGInferenceRequest):
+    try:
+        return ecg_inference_service.predict(**request.model_dump())
+    except (ValueError, FileNotFoundError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.post("/infer")
