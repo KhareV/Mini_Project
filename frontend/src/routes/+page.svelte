@@ -170,6 +170,7 @@
 			<a href="#signals">Signals</a>
 			<a href="#privacy">Privacy</a>
 			<a href="#research">Research</a>
+			<a class="nav__demo" href="/demo">Live demo</a>
 		</div>
 
 		<a class="nav__cta button--glass" href="/monitor">
@@ -208,10 +209,10 @@
 								A wearable monitoring system that captures physiological signals, processes them at the edge, and learns collaboratively without treating raw health data as centralized training data.
 							</p>
 							<div class="hero__actions">
-								<a class="button button--light" href="#technology">
-									<span>Explore the system</span><span>↓</span>
+								<a class="button button--light" href="/demo">
+									<span>Launch reviewer demo</span><span>↗</span>
 								</a>
-								<a class="text-link" href="/monitor">Open monitoring environment<span>↗</span></a>
+								<a class="text-link" href="/monitor">Open live workbench<span>↗</span></a>
 							</div>
 							</div>
 						</BlurFade>
@@ -501,8 +502,8 @@
 				</div>
 				
 				<p class="final__p">Continuous sensing. Local intelligence. Privacy-preserving learning.</p>
-				<a href="/monitor" class="button button--light button--glow">
-					<span>Enter the monitoring environment</span><span>↗</span>
+				<a href="/demo" class="button button--light button--glow">
+					<span>Present the interactive simulation</span><span>↗</span>
 				</a>
 			</div>
 
@@ -529,6 +530,7 @@
 			<a href="#technology">Technology</a>
 			<a href="#privacy">Privacy</a>
 			<a href="#research">Research</a>
+			<a href="/demo">Reviewer Demo</a>
 			<a href="/monitor">Monitor</a>
 		</div>
 		<div class="footer__meta">
